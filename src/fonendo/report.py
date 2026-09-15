@@ -60,6 +60,13 @@ METRIC_DEFINITIONS: dict[str, str] = {
     "degenerate_rate": "share of clips whose output is empty, loops, or runs away",
 }
 
+#: The ``configuration`` statement of summary.json.
+CONFIGURATION = (
+    "every system run with this package: default configuration (plain transcription, Spanish "
+    "forced where the system allows it, no prompt, context or vocabulary); results-only "
+    "systems were evaluated by their owner, see each one's note"
+)
+
 SUBSET_TITLES: dict[str, str] = {
     "clinical_test": "Clinical dictation",
     "fleurs_es": "FLEURS",
@@ -195,10 +202,7 @@ def build_summary(
         "benchmark": "fonendo-bench",
         "fonendo_version": __version__,
         "generated": generated or date.today().isoformat(),
-        "configuration": (
-            "default: plain transcription, Spanish forced where the system allows it, no "
-            "prompt, context or vocabulary"
-        ),
+        "configuration": CONFIGURATION,
         "normalizer": NORMALIZER_VERSION,
         "bootstrap": {
             "ci": 0.95,
@@ -252,7 +256,15 @@ def _name(s: Mapping[str, Any]) -> str:
 
 
 def _run(s: Mapping[str, Any]) -> str:
-    return f"`{s['runner']}`" if s.get("runner") else "–"
+    if not s.get("runner"):
+        return "–"
+    from fonendo.runners import EXPERIMENTAL
+
+    return f"`{s['runner']}`" + (" (experimental)" if s["runner"] in EXPERIMENTAL else "")
+
+
+def _cell(text: Any) -> str:
+    return "–" if text in (None, "") else str(text).replace("|", "\\|").replace("\n", " ")
 
 
 def _group_sorted(
@@ -278,15 +290,18 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
         "",
         f"Generated {summary['generated']} by `fonendo report` (fonendo "
         f"{summary['fonendo_version']}, normalizer `{summary['normalizer']}`). Every system "
-        "ran in its **default configuration**: plain transcription, Spanish forced where the "
-        "system allows it, no prompt, context or custom vocabulary.",
+        "run with this package was evaluated in its **default configuration**: plain "
+        "transcription, Spanish forced where the system allows it, no prompt, context or "
+        "custom vocabulary. Results-only rows (¹) were evaluated by their owner under the "
+        "conditions given in their note.",
         "",
         "Values are percentages (insertions: per 1,000 reference words), with the 95% bootstrap "
         f"interval in small type ({summary['bootstrap']['n_boot']:,} resamples, seed "
         f"{summary['bootstrap']['seed']}; clinical: whole sentences resampled, real speech: "
-        "clips resampled). Lower is better except for term recall. Rows are sorted by WER; "
-        "neighbouring rows whose intervals overlap may not differ, so use `fonendo compare` "
-        "for a paired test before calling one system better than another.",
+        "clips resampled). Lower is better except for term recall. Results-only rows are "
+        "pinned to the top of each table; the other rows are sorted by WER (real speech: by "
+        "mean WER). Neighbouring rows whose intervals overlap may not differ, so use "
+        "`fonendo compare` for a paired test before calling one system better than another.",
         "",
     ]
 
@@ -297,16 +312,15 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
             f"## Clinical dictation (`clinical_test`, {cl['n_clips']} clips)",
             "",
             "| System | Type | WER | Term recall | B-WER (term words) | U-WER (other words) "
-            "| Insertions / 1k | Degenerate | `--model` |",
-            "|---|---|--:|--:|--:|--:|--:|--:|---|",
+            "| Insertions / 1k | Degenerate |",
+            "|---|---|--:|--:|--:|--:|--:|--:|",
         ]
         for s in _group_sorted(clinical, lambda s: _val(s, "clinical_test", "wer")):
             r = s["results"]["clinical_test"]
             lines.append(
                 f"| {_name(s)} | {TYPES.get(s['type'], s['type'])} | {_pct(r['wer'])} "
                 f"| {_pct(r['term_recall'])} | {_pct(r['bwer'])} | {_pct(r['uwer'])} "
-                f"| {_num(r['insertions_per_1k'])} | {_pct(r['degenerate_rate'], ci=False)} "
-                f"| {_run(s)} |"
+                f"| {_num(r['insertions_per_1k'])} | {_pct(r['degenerate_rate'], ci=False)} |"
             )
         lines.append("")
 
@@ -360,6 +374,22 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
             )
         lines.append("")
 
+    lines += [
+        "## Systems",
+        "",
+        "License of each model, the `fonendo run --model` name of its runner and the settings "
+        "of the published run.",
+        "",
+        "| System | Type | License | `--model` | Settings |",
+        "|---|---|---|---|---|",
+    ]
+    for s in _group_sorted(systems, lambda s: _val(s, "clinical_test", "wer")):
+        lines.append(
+            f"| {_name(s)} | {TYPES.get(s['type'], s['type'])} | {_cell(s.get('license'))} "
+            f"| {_run(s)} | {_cell(s.get('settings'))} |"
+        )
+    lines.append("")
+
     notes = [s for s in systems if s.get("note")]
     lines += ["## Notes", ""]
     for s in notes:
@@ -369,8 +399,13 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
         "* **Type**: *commercial API* = hosted service called through its public streaming "
         "API; *open weights* = model run locally; *results only* = evaluated by its owner, not "
         "runnable with this package.",
-        "* **`--model`**: the `fonendo run --model` name that reproduces the row; `–` means "
-        "the row has no runner in this package yet.",
+        "* **Options not used**: the commercial APIs offer custom vocabulary, keyterm or "
+        "context features (Soniox, Deepgram) and Whisper accepts a text prompt. None of them "
+        "was used; they could raise those systems' clinical scores.",
+        "* **`--model`**: the `fonendo run --model` name of the runner for the row's model; "
+        "`–` means the row has no runner in this package yet. *(experimental)*: the runner "
+        "was not re-run with this package against the published row, so the reproduction is "
+        "not verified (`fonendo models` lists these runners).",
         "* **Degenerate**: share of clips whose output is empty, loops or runs away; such "
         "outputs are scored as they are (an empty output counts every reference word as "
         "deleted). Metrics are corpus-level, so one runaway output of hundreds of words can "

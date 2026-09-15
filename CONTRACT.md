@@ -5,9 +5,12 @@ in this repository follows it; change it first, in the same commit, when an inte
 change.
 
 fonendo-bench measures Spanish speech-to-text on clinical dictation and on real Spanish speech.
-Every system runs in its **default configuration**: plain transcription of the audio, Spanish
-forced when the system allows it, no prompt, context, vocabulary or any other per-clip
-information. The numbers therefore describe what a user gets out of the box.
+Every system that the package runs is evaluated in its **default configuration**: plain
+transcription of the audio, Spanish forced when the system allows it, no prompt, context,
+vocabulary or any other per-clip information, so those numbers describe what a user gets out
+of the box. Results-only rows of the leaderboard (section 6) are evaluated by their owner and
+state their conditions in their `note`; the published OmniScribe 2 row used patient-record
+context that included the spoken medical terms.
 
 ## 1. Package
 
@@ -157,7 +160,8 @@ model's dependencies; a missing extra becomes `pip install 'fonendo[<extra>]'`:
 
 ```python
 LOCAL_REGISTRY["whisper_large_v3"] = lazy(
-    "fonendo.runners.local.whisper:WhisperRunner", extra="whisper",
+    "fonendo.runners.local.whisper:WhisperRunner",
+    extra="whisper",
 )
 ```
 
@@ -271,7 +275,7 @@ All metrics are corpus-level (ratio of sums over clips).
 | key | subsets | definition |
 |---|---|---|
 | `wer` | all | (S + D + I) / reference words |
-| `term_recall` | clinical | share of the clip's gold terms found as an exact normalized span in the hypothesis (all-or-nothing per term); denominator: gold terms that occur as a span in the normalized reference |
+| `term_recall` | clinical | share of the gold-term occurrences of the normalized reference whose every word is aligned as correct in the hypothesis (all-or-nothing per term); denominator: gold terms that occur as a span in the normalized reference |
 | `term_word_error_rate` | clinical | B-WER (Le et al., Interspeech 2021): errors on reference words that belong to the clip's gold terms / number of such words; an insertion counts here when the inserted word is a gold-term word |
 | `other_word_error_rate` | clinical | U-WER: the same on all other words |
 | `insertions_per_1k` | all | inserted words per 1,000 reference words |
@@ -342,10 +346,13 @@ results/
   Each system: `{id, label, type, provider, model_id, license, runner, settings, note,
   results: {<subset>: {n_clips, complete, block, wer, term_recall, bwer, uwer,
   insertions_per_1k, degenerate_rate, by_condition?}}, real_speech_mean_wer}`; each metric is
-  `{value, ci95}` or null. `type` is `api`, `open`, `results-only` or `local-run`; `runner` is
-  the `--model` name that reproduces the row, or null.
+  `{value, ci95}` or null (`ci95` may be null on results-only rows). `type` is `api`, `open`,
+  `results-only` or `local-run`; `runner` is the `--model` name of the row's runner, or null.
+  Runners listed in `fonendo.runners.EXPERIMENTAL` were not re-run against their published
+  row; the leaderboard marks them *experimental*.
 * **Results-only systems** (evaluated by their owner, no runner in `REGISTRY`) appear with
   `type: "results-only"`, `runner: null` and a `note` that the leaderboard shows verbatim.
+  They are pinned to the top of every leaderboard table; the other rows are sorted by WER.
 * `fonendo report` scores every `<results-dir>/<model>/<subset>.jsonl` of a `test` subset
   (default `results/raw`) and writes `summary.json` + `leaderboard.md` to `--out`;
   `--published results/summary.json` adds the published systems to the tables.
@@ -364,13 +371,18 @@ fonendo report [--results-dir results/raw] [--out DIR] [--published results/summ
 Environment: `HF_TOKEN` (gated dataset and weights), `FONENDO_DATA_DIR`, `FONENDO_HF_DIR`,
 `HF_HUB_CACHE`, and the API keys of remote runners.
 
+Expected failures (unknown model, missing extra, missing API key, public subset not fetched,
+no access to the gated dataset) print one line, `fonendo <command>: error: <message>`, on
+stderr and exit with code 2; `fonendo --traceback <command> ...` shows the full traceback.
+`fonendo run` checks the runner's environment variables before it loads the subset.
+
 ## 8. Repository hygiene
 
 * No secrets, local absolute paths, or machine names in code, docs, results or commit messages.
 * Audio never enters git (`*.wav`, `data/` are ignored); clinical audio is distributed only
-  through the gated dataset. The one exception is the showcase: `docs/audio/` holds a few
-  short MP3 demo clips (clinical clips chosen by Omniloy for illustration, and FLEURS clips
-  under CC BY 4.0, credited on the page).
+  through the gated dataset. The one exception is the showcase: `docs/audio/` holds 13 short
+  MP3 demo clips, `clinical_test` clips chosen by Omniloy for illustration (© Omniloy, not
+  under the code license; credits and terms in the README, section License).
 * `results/` publishes aggregate numbers only (`summary.json`, `leaderboard.md`): no
   hypotheses and no per-clip data.
 * Code comments and docs are in English; references and hypotheses stay as produced (Spanish).

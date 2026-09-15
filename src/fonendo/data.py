@@ -91,6 +91,12 @@ SUBSETS: dict[str, SubsetInfo] = {
 #: Default location of the public subsets built by `fonendo fetch`.
 DEFAULT_DATA_DIR = Path(os.environ.get("FONENDO_DATA_DIR", "data"))
 
+HF_DATASET_URL = f"https://huggingface.co/datasets/{HF_DATASET}"
+
+
+class DataUnavailableError(RuntimeError):
+    """A subset cannot be loaded: no access to the gated dataset, or a bad local copy."""
+
 
 # --------------------------------------------------------------------------------------
 # JSONL helpers (shared by runners, scoring and the CLI)
@@ -189,7 +195,24 @@ def _load_clinical(
     source = str(hf_dir) if hf_dir else HF_DATASET
     # token=None lets huggingface_hub resolve HF_TOKEN or the cached login itself
     kwargs: dict[str, Any] = {"token": token} if token and not hf_dir else {}
-    dsd = datasets.load_dataset(source, name, **kwargs)
+    try:
+        dsd = datasets.load_dataset(source, name, **kwargs)
+    except Exception as exc:  # noqa: BLE001 - re-raised with what to do about it
+        first_line = (str(exc).strip().splitlines() or [""])[0]
+        cause = f"{type(exc).__name__}: {first_line}" if first_line else type(exc).__name__
+        if hf_dir:
+            hint = (
+                f"check that {hf_dir} is a copy of the {HF_DATASET} dataset repository "
+                f"(README.md and data/{name}/*.parquet)"
+            )
+        else:
+            hint = (
+                f"the clinical subsets are gated: request access on {HF_DATASET_URL} and email "
+                "info@omniloy.com, then log in with an account that has access (`hf auth "
+                "login`) or set HF_TOKEN; or point --hf-dir (FONENDO_HF_DIR) at a local copy "
+                "of the dataset"
+            )
+        raise DataUnavailableError(f"cannot load {name} from {source} ({cause}); {hint}") from exc
     if len(dsd) != 1:
         raise ValueError(f"{source}/{name}: expected a single split, found {list(dsd)}")
     ds = next(iter(dsd.values()))

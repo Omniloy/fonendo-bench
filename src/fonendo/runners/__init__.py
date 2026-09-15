@@ -24,6 +24,20 @@ if _overlap:  # pragma: no cover - a packaging error
 
 REGISTRY: dict[str, Factory] = dict(sorted({**LOCAL_REGISTRY, **REMOTE_REGISTRY}.items()))
 
+#: Runners whose output has not been checked inside this package against a published row
+#: (``fonendo models`` and the leaderboard mark them *experimental*), with the reason.
+EXPERIMENTAL: dict[str, str] = {
+    "mlx_whisper_large_v3": "Apple Silicon backend; the large-v3 conversion has not been scored",
+    "mlx_whisper_large_v3_turbo": (
+        "Apple Silicon backend; the large-v3-turbo conversion has not been scored"
+    ),
+    "openai_compatible": "generic client for OpenAI-style servers; no published row",
+    "voxtral_small_24b": (
+        "not re-run with this package (48.5 GB download, about 28 GB of GPU memory); the "
+        "published row used the same model revision, precision and decoding settings"
+    ),
+}
+
 
 def get_runner(name: str, **kwargs) -> Runner:
     """Instantiate a registered runner (does not load weights; ``run_subset`` does)."""
@@ -36,6 +50,7 @@ def get_runner(name: str, **kwargs) -> Runner:
 
 
 __all__ = [
+    "EXPERIMENTAL",
     "LOCAL_REGISTRY",
     "REGISTRY",
     "REMOTE_REGISTRY",

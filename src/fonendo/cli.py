@@ -6,6 +6,10 @@ fonendo run --model M --subset S [--limit N]   transcribe -> results/raw/M/S.jso
 fonendo score --subset S --hyps F [--out J]    metrics with 95% CIs
 fonendo compare A B --subset S                 paired comparison of two hypotheses files
 fonendo report [--results-dir results/raw]     summary.json + leaderboard.md from your runs
+
+Expected failures (unknown model, missing extra, missing API key, data not fetched or not
+accessible) are reported as one line on stderr with exit code 2; ``fonendo --traceback ...``
+shows the full traceback instead.
 """
 
 from __future__ import annotations
@@ -16,9 +20,18 @@ import sys
 from pathlib import Path
 
 from fonendo import __version__
-from fonendo.data import DEFAULT_DATA_DIR, SUBSETS, load_subset
+from fonendo.data import DEFAULT_DATA_DIR, SUBSETS, DataUnavailableError, load_subset
 
 PUBLIC_SUBSETS = [n for n, s in SUBSETS.items() if s.kind == "public"]
+
+#: Errors with an actionable message: printed as one line instead of a traceback.
+EXPECTED_ERRORS: tuple[type[BaseException], ...] = (
+    DataUnavailableError,
+    FileNotFoundError,
+    ImportError,
+    KeyError,
+    RuntimeError,
+)
 
 
 def _dump(obj: dict, out: str | None) -> None:
@@ -46,12 +59,14 @@ def cmd_fetch(args: argparse.Namespace) -> int:
 
 
 def cmd_models(args: argparse.Namespace) -> int:
-    from fonendo.runners import LOCAL_REGISTRY, REGISTRY
+    from fonendo.runners import EXPERIMENTAL, LOCAL_REGISTRY, REGISTRY
 
     for name, factory in REGISTRY.items():
         kind = "local " if name in LOCAL_REGISTRY else "remote"
         extra = getattr(factory, "extra", "?")
-        print(f"{name:32s} {kind}  pip install 'fonendo[{extra}]'")
+        install = f"pip install 'fonendo[{extra}]'"
+        flag = "  (experimental)" if name in EXPERIMENTAL else ""
+        print(f"{name:32s} {kind}  {install:40s}{flag}".rstrip())
     return 0
 
 
@@ -60,6 +75,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     overrides = {"device": args.device} if args.device else {}
     runner = get_runner(args.model, **overrides)
+    runner.check_env()  # a missing API key fails before the subset is loaded
     rows = load_subset(args.subset, args.data_dir, hf_dir=args.hf_dir, limit=args.limit)
     out = Path(args.out or Path("results/raw") / args.model / f"{args.subset}.jsonl")
     run_subset(runner, rows, out, subset=args.subset)
@@ -119,6 +135,11 @@ def build_parser() -> argparse.ArgumentParser:
         prog="fonendo", description="Spanish clinical speech-to-text benchmark"
     )
     p.add_argument("--version", action="version", version=f"fonendo {__version__}")
+    p.add_argument(
+        "--traceback",
+        action="store_true",
+        help="show the full Python traceback of an error instead of a one-line message",
+    )
     sub = p.add_subparsers(dest="command", required=True)
 
     def data_args(sp: argparse.ArgumentParser) -> None:
@@ -205,9 +226,22 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
+def _message(exc: BaseException) -> str:
+    # KeyError wraps its message in quotes; show the message itself
+    if isinstance(exc, KeyError) and len(exc.args) == 1 and isinstance(exc.args[0], str):
+        return exc.args[0]
+    return str(exc) or type(exc).__name__
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return int(args.func(args) or 0)
+    try:
+        return int(args.func(args) or 0)
+    except EXPECTED_ERRORS as exc:
+        if args.traceback:
+            raise
+        print(f"fonendo {args.command}: error: {_message(exc)}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
