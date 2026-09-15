@@ -72,7 +72,7 @@ def cmd_models(args: argparse.Namespace) -> int:
     for name, factory in REGISTRY.items():
         kind = "local " if name in LOCAL_REGISTRY else "remote"
         extra = getattr(factory, "extra", "?")
-        install = f"pip install 'fonendo[{extra}]'"
+        install = f"pip install 'fonendo[{extra}] @ git+https://github.com/Omniloy/fonendo-bench'"
         flag = "  (experimental)" if name in EXPERIMENTAL else ""
         print(f"{name:32s} {kind}  {install:40s}{flag}".rstrip())
     return 0

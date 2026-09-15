@@ -2,7 +2,7 @@
 data/
 *.wav
 
-# Local run outputs (curated hypotheses and scores are committed under results/<model>/)
+# Local run outputs (only aggregate scores are published, in results/summary.json and results/leaderboard.md)
 results/raw/
 
 # Secrets

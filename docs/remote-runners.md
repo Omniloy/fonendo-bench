@@ -12,7 +12,7 @@ live in `src/fonendo/runners/remote/`.
 | `openai_compatible` | **experimental**: any `/v1/audio/transcriptions` server | `openai-compatible` | `FONENDO_OPENAI_BASE_URL`, `FONENDO_OPENAI_MODEL`, optional `FONENDO_OPENAI_API_KEY` |
 
 ```bash
-pip install "fonendo[soniox]"            # or fonendo[deepgram], fonendo[openai-compatible]
+pip install "fonendo[soniox] @ git+https://github.com/Omniloy/fonendo-bench"   # or [deepgram], [openai-compatible]
 export SONIOX_API_KEY=...                # read at run time; never logged or written
 export SONIOX_REGION=eu                  # the region of the project that owns the key
 fonendo run --model soniox_stt_rt_v5 --subset clinical_dev --limit 5   # smoke test, ~1 min
@@ -106,7 +106,7 @@ endpoint (for example vLLM serving a speech model it supports) and with hosted O
 APIs:
 
 ```bash
-pip install "fonendo[openai-compatible]"      # standard library only
+pip install "fonendo[openai-compatible] @ git+https://github.com/Omniloy/fonendo-bench"   # standard library only
 export FONENDO_OPENAI_BASE_URL=http://localhost:8000
 export FONENDO_OPENAI_MODEL=<model name as the server knows it>
 fonendo run --model openai_compatible --subset clinical_dev --limit 5 \

@@ -158,7 +158,7 @@ class Runner:
 
 `REGISTRY: dict[str, Factory]` in `fonendo/runners/__init__.py` maps a model name to a
 factory returning a `Runner`. Register with `lazy()` so importing the registry never imports a
-model's dependencies; a missing extra becomes `pip install 'fonendo[<extra>]'`:
+model's dependencies; a missing extra becomes `pip install 'fonendo[<extra>] @ git+https://github.com/Omniloy/fonendo-bench'` (the package is not on PyPI):
 
 ```python
 LOCAL_REGISTRY["whisper_large_v3"] = lazy(

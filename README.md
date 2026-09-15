@@ -3,6 +3,8 @@
 **A reproducible Spanish clinical speech-to-text benchmark, published by
 [Omniloy](https://omniloy.com).**
 
+**▶ [Listen to the demos](https://omniloy.github.io/fonendo-bench/)** · [Leaderboard](results/leaderboard.md) · [Showcase (text)](SHOWCASE.md) · [Dataset (gated, request access)](https://huggingface.co/datasets/Omniloy/fonendo-bench)
+
 fonendo-bench measures how well speech-to-text systems transcribe Spanish clinical dictation
 (drug names with doses, diagnoses, imaging and laboratory tests, abbreviations, numbers and
 units) and, as a control, real Spanish speech. It ships:
