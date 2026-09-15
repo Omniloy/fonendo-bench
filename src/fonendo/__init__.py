@@ -14,7 +14,7 @@ Results-only leaderboard rows are evaluated by their owner and state their condi
 
 __version__ = "0.1.0.dev0"
 
-HF_DATASET = "omniloy/fonendo-bench"
+HF_DATASET = "Omniloy/fonendo-bench"
 SAMPLE_RATE = 16_000
 
 __all__ = ["HF_DATASET", "SAMPLE_RATE", "__version__"]

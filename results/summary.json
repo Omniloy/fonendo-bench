@@ -18,7 +18,7 @@
   "subsets": {
     "clinical_test": {
       "n_clips": 300,
-      "source": "omniloy/fonendo-bench",
+      "source": "Omniloy/fonendo-bench",
       "by_condition": {
         "clean": 147,
         "degraded": 153

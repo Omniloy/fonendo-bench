@@ -44,7 +44,7 @@ def test_gated_dataset_error_says_what_to_do(monkeypatch, tmp_path, capsys):
     import datasets
 
     def not_found(*args, **kwargs):
-        raise FileNotFoundError("Dataset 'omniloy/fonendo-bench' doesn't exist on the Hub")
+        raise FileNotFoundError("Dataset 'Omniloy/fonendo-bench' doesn't exist on the Hub")
 
     monkeypatch.delenv("FONENDO_HF_DIR", raising=False)
     monkeypatch.setattr(datasets, "load_dataset", not_found)

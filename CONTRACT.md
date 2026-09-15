@@ -25,7 +25,7 @@ context that included the spoken medical terms.
 
 ```
 src/fonendo/
-  __init__.py        __version__, HF_DATASET = "omniloy/fonendo-bench", SAMPLE_RATE = 16000
+  __init__.py        __version__, HF_DATASET = "Omniloy/fonendo-bench", SAMPLE_RATE = 16000
   data.py            SUBSETS, load_subset(), load_audio_16k(), JSONL helpers
   fetch.py           builds the public subsets (`fonendo fetch`)
   text/              Spanish normalizer (tokenize, NORMALIZER_VERSION)
@@ -46,7 +46,7 @@ manifests/           clip selections of the public subsets (shipped in the wheel
 
 | name | clips | role | kind | source |
 |---|---:|---|---|---|
-| `clinical_test` | 300 | test | clinical | gated HF dataset `omniloy/fonendo-bench` |
+| `clinical_test` | 300 | test | clinical | gated HF dataset `Omniloy/fonendo-bench` |
 | `clinical_dev` | 60 | dev | clinical | gated HF dataset, sentences disjoint from `clinical_test` |
 | `fleurs_es` | 300 | test | public | `google/fleurs`, `es_419`, test split |
 | `voxpopuli_es` | 200 | test | public | `facebook/voxpopuli`, `es`, test split |
@@ -85,7 +85,7 @@ re-read files.
 
 ### 3.2 Clinical subsets: HF dataset
 
-* Hub: `datasets.load_dataset("omniloy/fonendo-bench", "<clinical_test|clinical_dev>")` with a
+* Hub: `datasets.load_dataset("Omniloy/fonendo-bench", "<clinical_test|clinical_dev>")` with a
   token of an account that was granted access (`HF_TOKEN` or `huggingface-cli login`). Access
   is by request (info@omniloy.com).
 * Local: `load_subset(..., hf_dir=PATH)` or `FONENDO_HF_DIR=PATH` loads a local clone of the

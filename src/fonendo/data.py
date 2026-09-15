@@ -11,7 +11,7 @@
     }
 
 Clinical subsets (``clinical_test``, ``clinical_dev``) come from the gated Hugging Face dataset
-``omniloy/fonendo-bench`` (request access, then ``HF_TOKEN`` or ``huggingface-cli login``), or
+``Omniloy/fonendo-bench`` (request access, then ``HF_TOKEN`` or ``huggingface-cli login``), or
 from a local clone of that dataset repo (``hf_dir`` / ``FONENDO_HF_DIR``). Public subsets
 (``fleurs_es``, ``voxpopuli_es``, ``mediaspeech_health``) are rebuilt from their original
 sources by ``fonendo fetch`` into ``<data_dir>/<subset>/`` (see CONTRACT.md).

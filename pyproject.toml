@@ -67,7 +67,7 @@ fonendo = "fonendo.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Omniloy/fonendo-bench"
-Dataset = "https://huggingface.co/datasets/omniloy/fonendo-bench"
+Dataset = "https://huggingface.co/datasets/Omniloy/fonendo-bench"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/fonendo"]

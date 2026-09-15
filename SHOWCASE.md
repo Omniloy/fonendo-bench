@@ -369,5 +369,5 @@ _How to read this_
 A public, reproducible benchmark of Spanish speech-to-text on clinical dictation and real Spanish speech, published by Omniloy. The systems the package runs are scored in their default configuration; OmniScribe 2 is a results-only row (see Method and limits).
 
 - **Code, runners and scoring:** [github.com/Omniloy/fonendo-bench](https://github.com/Omniloy/fonendo-bench) (Apache-2.0).
-- **Clinical audio:** gated dataset [huggingface.co/datasets/omniloy/fonendo-bench](https://huggingface.co/datasets/omniloy/fonendo-bench). Access is by request: email [info@omniloy.com](mailto:info@omniloy.com).
+- **Clinical audio:** gated dataset [huggingface.co/datasets/Omniloy/fonendo-bench](https://huggingface.co/datasets/Omniloy/fonendo-bench). Access is by request: email [info@omniloy.com](mailto:info@omniloy.com).
 - **Public sets:** FLEURS, VoxPopuli and MediaSpeech are rebuilt from their original sources with `fonendo fetch`.

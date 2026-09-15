@@ -11,7 +11,7 @@ units) and, as a control, real Spanish speech. It ships:
   same audio, scores them with one normalizer, and reports every number with a 95% bootstrap
   interval and paired comparisons;
 * the clinical test set, as a gated dataset on Hugging Face
-  ([omniloy/fonendo-bench](https://huggingface.co/datasets/omniloy/fonendo-bench));
+  ([Omniloy/fonendo-bench](https://huggingface.co/datasets/Omniloy/fonendo-bench));
 * recipes that rebuild three public real-speech test sets from their original sources, sample
   for sample;
 * the [leaderboard](results/leaderboard.md) of 26 systems, three commercial APIs and 22 open
@@ -94,7 +94,7 @@ above has all 22 open models.
 
 | subset | clips | hours | speech | source | license |
 |---|--:|--:|---|---|---|
-| `clinical_test` | 300 | 0.64 | synthetic voices, clinical dictation | [omniloy/fonendo-bench](https://huggingface.co/datasets/omniloy/fonendo-bench) (gated) | Omniloy fonendo-bench evaluation license |
+| `clinical_test` | 300 | 0.64 | synthetic voices, clinical dictation | [Omniloy/fonendo-bench](https://huggingface.co/datasets/Omniloy/fonendo-bench) (gated) | Omniloy fonendo-bench evaluation license |
 | `clinical_dev` | 60 | 0.13 | same, sentences disjoint from test; never reported | same | same |
 | `fleurs_es` | 300 | 1.04 | read Wikipedia sentences | [google/fleurs](https://huggingface.co/datasets/google/fleurs), `es_419` test | CC BY 4.0 |
 | `voxpopuli_es` | 200 | 0.64 | European Parliament speeches | [facebook/voxpopuli](https://huggingface.co/datasets/facebook/voxpopuli), `es` test | CC0 (see the dataset card for the European Parliament's terms) |
@@ -108,10 +108,10 @@ Spain and Latin America). About half of the clips are clean; the other half are 
 added noise (20 to 5 dB SNR) and, on many clips, a phone or low-bitrate codec, room
 reverberation or a speed or pitch change. Each clip lists the medical terms it contains
 (`terms`), which drive the term metrics. The sentences describe no real patient. Details are in
-the [dataset card](https://huggingface.co/datasets/omniloy/fonendo-bench).
+the [dataset card](https://huggingface.co/datasets/Omniloy/fonendo-bench).
 
 **Access.** Request access on the
-[dataset page](https://huggingface.co/datasets/omniloy/fonendo-bench) and email
+[dataset page](https://huggingface.co/datasets/Omniloy/fonendo-bench) and email
 **info@omniloy.com** with your name, your organisation and your intended use. The license
 allows evaluation and research, including commercial evaluation; it forbids redistributing the
 audio and training or adapting models on it. Once access is granted, `fonendo` downloads the
@@ -349,7 +349,7 @@ Development: `pip install -e ".[dev]"`, then `pytest` and `ruff check src tests`
   author       = {{Omniloy}},
   year         = {2026},
   howpublished = {\url{https://github.com/Omniloy/fonendo-bench}},
-  note         = {Clinical subsets: \url{https://huggingface.co/datasets/omniloy/fonendo-bench}}
+  note         = {Clinical subsets: \url{https://huggingface.co/datasets/Omniloy/fonendo-bench}}
 }
 ```
 
@@ -360,7 +360,7 @@ et al., 2021) and MediaSpeech (Kolobov et al., 2021).
 
 The code in this repository is licensed under the [Apache License 2.0](LICENSE). The clinical
 dataset is distributed separately under the Omniloy fonendo-bench evaluation license (see the
-[dataset card](https://huggingface.co/datasets/omniloy/fonendo-bench)). Audio rebuilt by
+[dataset card](https://huggingface.co/datasets/Omniloy/fonendo-bench)). Audio rebuilt by
 `fonendo fetch` keeps the license of its source (FLEURS CC BY 4.0, VoxPopuli CC0, MediaSpeech
 CC BY 4.0). Each model keeps its own license: the Supported models table above lists the
 runnable ones, and the Systems table of [results/leaderboard.md](results/leaderboard.md) (and
