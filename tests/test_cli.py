@@ -86,3 +86,64 @@ def test_leaderboard_lists_licenses_and_experimental_runners():
     assert "| Big | open weights | Apache-2.0 | `voxtral_small_24b` (experimental) |" in md
     assert "| Other | open weights | MIT | – |" in md
     assert "pinned to the top" in md
+    # the open-weights row without a runner is covered by the configuration statement
+    assert "* **Open-weights rows without a runner** (Other): not runnable" in md
+    assert "open-weights rows without a runner (`--model` –)" in md.split("\n")[2]
+
+
+def _public_subset(tmp_path, n=300):
+    d = tmp_path / "data" / "fleurs_es"
+    d.mkdir(parents=True)
+    with open(d / "manifest.jsonl", "w", encoding="utf-8") as fh:
+        for i in range(n):
+            rec = {"clip_id": f"p{i:03d}", "audio_path": "audio/x.wav", "text": "hola a todos"}
+            fh.write(json.dumps({**rec, "meta": {}}) + "\n")
+    return tmp_path / "data"
+
+
+BAD_HYPS = {
+    "truncated line": b'{"clip_id": "p000", "hyp": "hola"}\n{"clip_id": "p001", "hy',
+    "not an object": b'{"clip_id": "p000", "hyp": "hola"}\n["p001", "hola"]\n',
+    "no clip_id": b'{"clip_id": "p000", "hyp": "hola"}\n{"hyp": "hola"}\n',
+    "hyp not a string": b'{"clip_id": "p000", "hyp": ["hola"]}\n',
+    "not utf-8": b'{"clip_id": "p000", "hyp": "\xff\xfe"}\n',
+    "a JSON array file": b'[{"clip_id": "p000", "hyp": "hola"}]',
+}
+
+
+@pytest.mark.parametrize("case", sorted(BAD_HYPS))
+def test_malformed_hyps_file_is_one_line(case, tmp_path, capsys, monkeypatch):
+    bad = tmp_path / "bad.jsonl"
+    bad.write_bytes(BAD_HYPS[case])
+    good = tmp_path / "good.jsonl"
+    good.write_text(json.dumps({"clip_id": "p000", "hyp": "hola a todos"}) + "\n")
+    monkeypatch.setattr(cli, "load_subset", _fail_if_called)  # fails before loading the data
+    for argv in (
+        ["score", "--subset", "fleurs_es", "--hyps", str(bad)],
+        ["compare", str(good), str(bad), "--subset", "fleurs_es"],
+        ["compare", str(bad), str(good), "--subset", "fleurs_es"],
+    ):
+        rc = cli.main(argv)
+        err = capsys.readouterr().err
+        assert rc == 2, (case, argv)
+        assert err.startswith(f"fonendo {argv[0]}: error: {bad}")
+        assert "Traceback" not in err and err.count("\n") == 1
+
+
+def test_hyps_directory_is_one_line(tmp_path, capsys):
+    rc = cli.main(["score", "--subset", "fleurs_es", "--hyps", str(tmp_path)])
+    err = capsys.readouterr().err
+    assert rc == 2 and "Traceback" not in err and err.count("\n") == 1
+
+
+def test_valid_hyps_still_score(tmp_path, capsys):
+    data_dir = _public_subset(tmp_path)
+    hyps = tmp_path / "h.jsonl"
+    lines = [json.dumps({"clip_id": f"p{i:03d}", "hyp": "hola a todos"}) for i in range(300)]
+    hyps.write_text("\n".join(lines) + "\n\n")  # blank lines are fine
+    rc = cli.main(
+        ["score", "--subset", "fleurs_es", "--hyps", str(hyps), "--data-dir", str(data_dir),
+         "--n-boot", "50"]
+    )  # fmt: skip
+    out = json.loads(capsys.readouterr().out)
+    assert rc == 0 and out["complete"] and out["metrics"]["wer"]["value"] == 0.0

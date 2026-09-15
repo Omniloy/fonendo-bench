@@ -22,7 +22,7 @@ from typing import Any
 import numpy as np
 
 from fonendo import SAMPLE_RATE, __version__
-from fonendo.data import read_jsonl
+from fonendo.data import MalformedFileError, parse_jsonl_line
 
 KINDS = ("local", "remote")
 #: Hard cap on parallel requests to a remote API, whatever the runner asks for.
@@ -105,9 +105,10 @@ class Runner:
     def transcribe(self, audio: np.ndarray, sr: int) -> str:
         """Return the raw transcript of one clip (float32 mono; ``sr`` is always 16000).
 
-        Default configuration only: Spanish forced when the system allows it, greedy or the
-        decoding the model card recommends, temperature 0, no prompt or context of any kind.
-        Return the text as produced; scoring normalizes it.
+        Default configuration only: no custom vocabulary, keyterms or context prompt; Spanish
+        selected where the system allows it; an instruction-following model gets only the fixed
+        transcription instruction it needs; greedy or the decoding the model card recommends,
+        temperature 0. Return the text as produced; scoring normalizes it.
         """
         raise NotImplementedError
 
@@ -161,15 +162,42 @@ def lazy(target: str, *, extra: str, **defaults: Any) -> Factory:
 # --------------------------------------------------------------------------------------
 
 
-def _done_ids(out_path: Path) -> set[str]:
-    """Keep successful lines of an existing output file; drop error lines so they are retried."""
+def _done_ids(out_path: Path, log: Callable[[str], None] = print) -> set[str]:
+    """Keep the successful lines of an existing output file and return their clip ids.
+
+    Error lines are dropped so their clips are retried. A last line that cannot be parsed (a
+    run killed in the middle of a write leaves a truncated line) is dropped with a warning and
+    its clip is redone; an unparsable line anywhere else raises ``MalformedFileError``.
+    """
     if not out_path.exists():
         return set()
-    good = [r for r in read_jsonl(out_path) if not r.get("error")]
+    lines = [
+        (lineno, line)
+        for lineno, line in enumerate(out_path.read_bytes().split(b"\n"), 1)
+        if line.strip()
+    ]
+    good = []
+    for k, (lineno, line) in enumerate(lines):
+        try:
+            rec = parse_jsonl_line(line)
+            if rec.get("clip_id") in (None, ""):
+                raise ValueError('no "clip_id"')
+        except ValueError as exc:
+            if k < len(lines) - 1:
+                raise MalformedFileError(
+                    f"{out_path}, line {lineno}: {exc}; fix or delete that line to resume"
+                ) from None
+            log(
+                f"warning: {out_path}, line {lineno} is incomplete ({exc}), probably from an "
+                "interrupted run; dropping it, its clip will be transcribed again"
+            )
+            continue
+        if not rec.get("error"):
+            good.append(rec)
     with open(out_path, "w", encoding="utf-8") as fh:
         for r in good:
             fh.write(json.dumps(r, ensure_ascii=False) + "\n")
-    return {r["clip_id"] for r in good}
+    return {str(r["clip_id"]) for r in good}
 
 
 def run_subset(
@@ -182,15 +210,16 @@ def run_subset(
 ) -> Path:
     """Transcribe ``rows`` (from ``load_subset``) into ``out_path`` (one JSON line per clip).
 
-    Resumable: clip_ids already in ``out_path`` are skipped, lines with ``error`` are retried.
-    Each line is ``{"clip_id", "hyp", "secs"}`` (+ ``"error"`` on failure) and is flushed at
-    once. ``secs`` is the wall time of the transcription call only (a batch's time is split
-    evenly over its clips). Run metadata goes to ``<out_path stem>.run.json``.
+    Resumable: clip_ids already in ``out_path`` are skipped, lines with ``error`` are retried,
+    and a truncated last line (from an interrupted run) is dropped with a warning and its clip
+    redone. Each line is ``{"clip_id", "hyp", "secs"}`` (+ ``"error"`` on failure) and is
+    flushed at once. ``secs`` is the wall time of the transcription call only (a batch's time
+    is split evenly over its clips). Run metadata goes to ``<out_path stem>.run.json``.
     """
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    done = _done_ids(out_path)
-    todo = [r for r in rows if r["clip_id"] not in done]
+    done = _done_ids(out_path, log)
+    todo = [r for r in rows if str(r["clip_id"]) not in done]
     log(f"{runner.name} / {subset}: {len(done)} done, {len(todo)} to go -> {out_path}")
     if not todo:
         return out_path

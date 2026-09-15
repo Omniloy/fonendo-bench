@@ -8,8 +8,8 @@ fonendo compare A B --subset S                 paired comparison of two hypothes
 fonendo report [--results-dir results/raw]     summary.json + leaderboard.md from your runs
 
 Expected failures (unknown model, missing extra, missing API key, data not fetched or not
-accessible) are reported as one line on stderr with exit code 2; ``fonendo --traceback ...``
-shows the full traceback instead.
+accessible, a malformed hypotheses file) are reported as one line on stderr with exit code 2;
+``fonendo --traceback ...`` shows the full traceback instead.
 """
 
 from __future__ import annotations
@@ -20,7 +20,13 @@ import sys
 from pathlib import Path
 
 from fonendo import __version__
-from fonendo.data import DEFAULT_DATA_DIR, SUBSETS, DataUnavailableError, load_subset
+from fonendo.data import (
+    DEFAULT_DATA_DIR,
+    SUBSETS,
+    DataUnavailableError,
+    MalformedFileError,
+    load_subset,
+)
 
 PUBLIC_SUBSETS = [n for n, s in SUBSETS.items() if s.kind == "public"]
 
@@ -28,8 +34,10 @@ PUBLIC_SUBSETS = [n for n, s in SUBSETS.items() if s.kind == "public"]
 EXPECTED_ERRORS: tuple[type[BaseException], ...] = (
     DataUnavailableError,
     FileNotFoundError,
+    IsADirectoryError,
     ImportError,
     KeyError,
+    MalformedFileError,
     RuntimeError,
 )
 
@@ -86,10 +94,9 @@ def cmd_score(args: argparse.Namespace) -> int:
     from fonendo.report import score_cell
     from fonendo.scoring import load_hyps
 
+    hyps = load_hyps(args.hyps)  # a malformed file fails before the subset is loaded
     rows = load_subset(args.subset, args.data_dir, hf_dir=args.hf_dir, with_audio=False)
-    result = score_cell(
-        args.subset, rows, load_hyps(args.hyps), block=args.block, n_boot=args.n_boot
-    )
+    result = score_cell(args.subset, rows, hyps, block=args.block, n_boot=args.n_boot)
     _dump({"subset": args.subset, "hyps": str(args.hyps), **result}, args.out)
     if not result["complete"]:
         print(
@@ -104,11 +111,12 @@ def cmd_compare(args: argparse.Namespace) -> int:
     from fonendo.report import resolve_block
     from fonendo.scoring import compare, load_hyps
 
+    hyps_a, hyps_b = load_hyps(args.a), load_hyps(args.b)
     rows = load_subset(args.subset, args.data_dir, hf_dir=args.hf_dir, with_audio=False)
     result = compare(
         rows,
-        load_hyps(args.a),
-        load_hyps(args.b),
+        hyps_a,
+        hyps_b,
         block=resolve_block(args.subset, args.block),
         n_boot=args.n_boot,
     )

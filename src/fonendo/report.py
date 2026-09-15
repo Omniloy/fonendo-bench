@@ -25,8 +25,8 @@ from pathlib import Path
 from typing import Any
 
 from fonendo import __version__
-from fonendo.data import SUBSETS, load_subset, read_jsonl
-from fonendo.scoring import N_BOOT, NORMALIZER_VERSION, SEED, score, score_macro
+from fonendo.data import SUBSETS, load_subset
+from fonendo.scoring import N_BOOT, NORMALIZER_VERSION, SEED, load_hyps, score, score_macro
 
 #: Subsets shown in the leaderboard, in display order.
 REPORT_SUBSETS: tuple[str, ...] = tuple(n for n, s in SUBSETS.items() if s.role == "test")
@@ -60,11 +60,20 @@ METRIC_DEFINITIONS: dict[str, str] = {
     "degenerate_rate": "share of clips whose output is empty, loops, or runs away",
 }
 
+#: What "default configuration" means, as stated in summary.json and leaderboard.md.
+DEFAULT_CONFIGURATION = (
+    "no custom vocabulary, keyterms or context prompt; Spanish selected where the system "
+    "allows it; instruction-following models get only the fixed transcription instruction "
+    "they need"
+)
+
 #: The ``configuration`` statement of summary.json.
 CONFIGURATION = (
-    "every system run with this package: default configuration (plain transcription, Spanish "
-    "forced where the system allows it, no prompt, context or vocabulary); results-only "
-    "systems were evaluated by their owner, see each one's note"
+    f"default configuration ({DEFAULT_CONFIGURATION}) for every system except the "
+    "results-only ones. This covers the systems run with this package and the open-weights "
+    "rows without a runner (runner null), which Omniloy ran outside the package on the same "
+    "audio, with the same scoring and the settings given in each row. Results-only systems "
+    "were evaluated by their owner under the conditions given in their note."
 )
 
 SUBSET_TITLES: dict[str, str] = {
@@ -282,18 +291,30 @@ def _val(s: Mapping[str, Any], subset: str, metric: str) -> float | None:
     return None if not m else m.get("value")
 
 
+def _clinical_wer(s: Mapping[str, Any]) -> float | None:
+    return _val(s, "clinical_test", "wer")
+
+
 def render_leaderboard(summary: Mapping[str, Any]) -> str:
     """The leaderboard.md text of a summary.json document."""
     systems = list(summary["systems"])
+    no_runner = [s for s in systems if s["type"] == "open" and not s.get("runner")]
     lines = [
         "# fonendo-bench leaderboard",
         "",
         f"Generated {summary['generated']} by `fonendo report` (fonendo "
         f"{summary['fonendo_version']}, normalizer `{summary['normalizer']}`). Every system "
-        "run with this package was evaluated in its **default configuration**: plain "
-        "transcription, Spanish forced where the system allows it, no prompt, context or "
-        "custom vocabulary. Results-only rows (¹) were evaluated by their owner under the "
-        "conditions given in their note.",
+        "except the results-only rows was evaluated in its **default configuration**: "
+        f"{DEFAULT_CONFIGURATION}."
+        + (
+            " That covers the systems run with this package and the open-weights rows without "
+            "a runner (`--model` –), which Omniloy ran outside the package on the same audio, "
+            "with the same scoring and the settings listed under *Systems*."
+            if no_runner
+            else ""
+        )
+        + " Results-only rows (¹) were evaluated by their owner under the conditions given in "
+        "their note.",
         "",
         "Values are percentages (insertions: per 1,000 reference words), with the 95% bootstrap "
         f"interval in small type ({summary['bootstrap']['n_boot']:,} resamples, seed "
@@ -383,7 +404,7 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
         "| System | Type | License | `--model` | Settings |",
         "|---|---|---|---|---|",
     ]
-    for s in _group_sorted(systems, lambda s: _val(s, "clinical_test", "wer")):
+    for s in _group_sorted(systems, _clinical_wer):
         lines.append(
             f"| {_name(s)} | {TYPES.get(s['type'], s['type'])} | {_cell(s.get('license'))} "
             f"| {_run(s)} | {_cell(s.get('settings'))} |"
@@ -395,6 +416,15 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
     for s in notes:
         mark = "¹ " if s["type"] == "results-only" else ""
         lines.append(f"* {mark}**{s['label']}**: {s['note']}")
+    if no_runner:
+        names = ", ".join(s["label"] for s in _group_sorted(no_runner, _clinical_wer))
+        lines.append(
+            f"* **Open-weights rows without a runner** ({names}): not runnable with this "
+            "package yet. "
+            "Omniloy ran them outside the package in their default configuration (as defined "
+            "at the top), on the same audio and with the same scoring; the *Systems* table "
+            "gives the settings of each."
+        )
     lines += [
         "* **Type**: *commercial API* = hosted service called through its public streaming "
         "API; *open weights* = model run locally; *results only* = evaluated by its owner, not "
@@ -403,7 +433,8 @@ def render_leaderboard(summary: Mapping[str, Any]) -> str:
         "context features (Soniox, Deepgram) and Whisper accepts a text prompt. None of them "
         "was used; they could raise those systems' clinical scores.",
         "* **`--model`**: the `fonendo run --model` name of the runner for the row's model; "
-        "`–` means the row has no runner in this package yet. *(experimental)*: the runner "
+        "`–` means the row has no runner in this package yet (see *Open-weights rows without a "
+        "runner* above; results-only rows are not runnable). *(experimental)*: the runner "
         "was not re-run with this package against the published row, so the reproduction is "
         "not verified (`fonendo models` lists these runners).",
         "* **Degenerate**: share of clips whose output is empty, loops or runs away; such "
@@ -454,6 +485,17 @@ def _run_info(model_dir: Path, model: str) -> dict[str, Any]:
     return info
 
 
+#: Appended to the id of a local run when it is merged with a published summary.json.
+LOCAL_ID_SUFFIX = "-local"
+
+
+def _unique_id(candidate: str, taken: set[str]) -> str:
+    n, out = 2, candidate
+    while out in taken:
+        out, n = f"{candidate}-{n}", n + 1
+    return out
+
+
 def build_report(
     results_dir: str | Path,
     out_dir: str | Path | None = None,
@@ -470,7 +512,9 @@ def build_report(
 
     Subsets whose data cannot be loaded (not fetched, no access to the gated dataset) are
     skipped with a message. ``published`` merges the systems of a published summary.json
-    (e.g. the repository's ``results/summary.json``) so a local run can be read next to them.
+    (e.g. the repository's ``results/summary.json``) so a local run can be read next to them;
+    the local entries then get the id ``<model>-local`` and the label ``<label> (your run)``,
+    so every id in the merged summary.json stays unique.
     """
     results_dir = Path(results_dir)
     out_dir = Path(out_dir) if out_dir else results_dir
@@ -497,7 +541,7 @@ def build_report(
         for subset, path in by_subset.items():
             if subset not in rows:
                 continue
-            hyps_of[subset] = read_jsonl(path)
+            hyps_of[subset] = load_hyps(path)
             cells[subset] = score_cell(
                 subset, rows[subset], hyps_of[subset], n_boot=n_boot, seed=seed
             )
@@ -515,11 +559,14 @@ def build_report(
 
     if published:
         pub = json.loads(Path(published).read_text(encoding="utf-8"))
-        local_ids = {e["id"] for e in entries}
+        taken = {s["id"] for s in pub["systems"]}
         for e in entries:
+            # a local run of a published model must not reuse the published row's id
+            e["id"] = _unique_id(f"{e['id']}{LOCAL_ID_SUFFIX}", taken)
+            taken.add(e["id"])
             e["label"] = f"{e['label']} (your run)"
+        log(f"report: merged {len(pub['systems'])} published systems ({len(entries)} local)")
         entries = [*pub["systems"], *entries]
-        log(f"report: merged {len(pub['systems'])} published systems ({len(local_ids)} local)")
 
     summary = build_summary(entries)
     js, md = write_report(summary, out_dir)
@@ -529,6 +576,7 @@ def build_report(
 
 __all__ = [
     "CONDITIONS",
+    "LOCAL_ID_SUFFIX",
     "REAL_SPEECH",
     "REPORT_SUBSETS",
     "SUMMARY_METRICS",

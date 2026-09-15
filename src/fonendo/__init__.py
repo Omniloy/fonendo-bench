@@ -7,9 +7,11 @@ Modules (see CONTRACT.md for the full interface contract):
 * ``fonendo.scoring``  ``score(rows, hyps)`` and ``compare(...)`` with bootstrap CIs
 * ``fonendo.cli``      the ``fonendo`` command (fetch, run, score, compare, report)
 
-Every system the package runs is evaluated in its default configuration: plain transcription
-of the audio, Spanish forced where the system allows it, no per-clip context of any kind.
-Results-only leaderboard rows are evaluated by their owner and state their conditions.
+Every system the package runs is evaluated in its default configuration: no custom
+vocabulary, keyterms or context prompt; Spanish selected where the system allows it;
+instruction-following models get only the fixed transcription instruction they need; no
+per-clip information of any kind. Results-only leaderboard rows are evaluated by their owner
+and state their conditions.
 """
 
 __version__ = "0.1.0.dev0"

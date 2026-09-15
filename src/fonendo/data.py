@@ -98,22 +98,47 @@ class DataUnavailableError(RuntimeError):
     """A subset cannot be loaded: no access to the gated dataset, or a bad local copy."""
 
 
+class MalformedFileError(ValueError):
+    """A JSONL file (hypotheses, manifest) has a line that is not a valid record."""
+
+
 # --------------------------------------------------------------------------------------
 # JSONL helpers (shared by runners, scoring and the CLI)
 # --------------------------------------------------------------------------------------
 
 
-def read_jsonl(path: str | Path) -> list[dict[str, Any]]:
-    """Read a JSONL file, skipping blank lines."""
-    with open(path, encoding="utf-8") as fh:
-        return [json.loads(line) for line in fh if line.strip()]
+def parse_jsonl_line(line: bytes | str) -> dict[str, Any]:
+    """Parse one JSONL line into a dict; raise ``ValueError`` if it is not a JSON object."""
+    if isinstance(line, bytes):
+        line = line.decode("utf-8")  # UnicodeDecodeError is a ValueError
+    try:
+        rec = json.loads(line)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid JSON at column {exc.colno}: {exc.msg}") from None
+    if not isinstance(rec, dict):
+        raise ValueError(f"expected a JSON object, got {type(rec).__name__}")
+    return rec
 
 
 def iter_jsonl(path: str | Path) -> Iterator[dict[str, Any]]:
-    with open(path, encoding="utf-8") as fh:
-        for line in fh:
-            if line.strip():
-                yield json.loads(line)
+    """Yield the records of a JSONL file, skipping blank lines.
+
+    Raises :class:`MalformedFileError` naming the file and line when a line is not a JSON
+    object (or the file is not UTF-8).
+    """
+    with open(path, "rb") as fh:
+        for lineno, line in enumerate(fh, 1):
+            if not line.strip():
+                continue
+            try:
+                yield parse_jsonl_line(line)
+            except ValueError as exc:
+                raise MalformedFileError(f"{path}, line {lineno}: {exc}") from None
+
+
+def read_jsonl(path: str | Path) -> list[dict[str, Any]]:
+    """Read a JSONL file, skipping blank lines (see :func:`iter_jsonl`)."""
+    return list(iter_jsonl(path))
 
 
 def write_jsonl(path: str | Path, rows: Iterable[dict[str, Any]]) -> None:

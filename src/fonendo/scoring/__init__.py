@@ -24,10 +24,15 @@ degenerate_rate         share of clips whose output is empty (for a non-empty re
                         or runs away (``fonendo.scoring.degenerate``).
 
 Confidence intervals: percentile bootstrap, 2,000 resamples, seed 0, the ratio of sums
-recomputed on each resample (``fonendo.scoring.bootstrap``). ``block="clip"`` (default)
-resamples clips; ``block="text"`` resamples sentences (``meta["text_id"]``: all clips of a
-sentence move together). A missing clip or a line with ``error`` is scored as an empty
-hypothesis and makes the result incomplete.
+recomputed on each resample (``fonendo.scoring.bootstrap``). ``block="clip"`` resamples clips;
+``block="text"`` resamples sentences (``meta["text_id"]``: all clips of a sentence move
+together). The default, ``block="auto"``, is the rule of the CLI and the leaderboard: sentences
+when the rows carry ``meta["text_id"]`` (the clinical subsets), clips otherwise, so the Python
+API reproduces the published intervals. A missing clip or a line with ``error`` is scored as an
+empty hypothesis and makes the result incomplete.
+
+In B-WER and U-WER, function words ("de", "la", "con", ...) inside a gold term are not term
+words: they count among the other words (U-WER).
 """
 
 from __future__ import annotations
@@ -39,7 +44,7 @@ from statistics import median
 from typing import Any
 
 from fonendo import SAMPLE_RATE
-from fonendo.data import read_jsonl
+from fonendo.data import MalformedFileError, read_jsonl
 from fonendo.scoring.alignment import Alignment, align
 from fonendo.scoring.bootstrap import (
     macro_ratio_ci,
@@ -80,6 +85,7 @@ __all__ = [
     "compare",
     "compare_macro",
     "load_hyps",
+    "resolve_block",
     "score",
     "score_clip",
     "score_macro",
@@ -92,8 +98,24 @@ __all__ = [
 
 
 def load_hyps(path: str | Path) -> list[dict[str, Any]]:
-    """Read a hypotheses JSONL file (``{"clip_id", "hyp", "secs"[, "error"]}`` per line)."""
-    return read_jsonl(path)
+    """Read a hypotheses JSONL file (``{"clip_id", "hyp", "secs"[, "error"]}`` per line).
+
+    Raises :class:`fonendo.data.MalformedFileError`, naming the file and line, when a line is
+    not a JSON object, has no ``clip_id``, or has a ``hyp`` that is not a string.
+    """
+    rows = read_jsonl(path)
+    for lineno, rec in enumerate(rows, 1):
+        problem = None
+        if rec.get("clip_id") in (None, ""):
+            problem = 'no "clip_id"'
+        elif not isinstance(rec.get("hyp", ""), (str, type(None))):
+            problem = f'"hyp" is a {type(rec["hyp"]).__name__}, not a string'
+        if problem:
+            raise MalformedFileError(
+                f"{path}: record {lineno} ({problem}) is not a hypothesis line "
+                '{"clip_id", "hyp", "secs"}'
+            )
+    return rows
 
 
 def _hyp_records(hyps: Hyps) -> dict[str, dict[str, Any]]:
@@ -195,11 +217,15 @@ def score_clip(ref_text: str, hyp_text: str, terms: Iterable[str] = (), **fields
     return c
 
 
+def _text_id(row: dict[str, Any]) -> Any:
+    meta = row.get("meta") or {}
+    return meta.get("text_id", row.get("text_id"))
+
+
 def _block_key(row: dict[str, Any], block: str) -> str:
     if block == "clip":
         return str(row["clip_id"])
-    meta = row.get("meta") or {}
-    text_id = meta.get("text_id", row.get("text_id"))
+    text_id = _text_id(row)
     return str(text_id) if text_id is not None else str(row["clip_id"])
 
 
@@ -214,19 +240,27 @@ def _duration(row: dict[str, Any]) -> float | None:
     return None
 
 
-def _check_block(block: str) -> str:
-    if block == "text_id":  # accepted alias
+def resolve_block(subset_rows: list[dict[str, Any]], block: str = "auto") -> str:
+    """The bootstrap unit actually used for ``subset_rows``: ``"clip"`` or ``"text"``.
+
+    ``"auto"`` is the rule of the CLI and the leaderboard: sentences (``"text"``) when the rows
+    carry ``meta["text_id"]``, as the clinical subsets do, clips otherwise. ``"text_id"`` is an
+    accepted alias of ``"text"``.
+    """
+    if block == "text_id":
         block = "text"
+    if block == "auto":
+        return "text" if any(_text_id(row) is not None for row in subset_rows) else "clip"
     if block not in BLOCKS:
-        raise ValueError(f"block must be one of {BLOCKS}")
+        raise ValueError(f"block must be 'auto' or one of {BLOCKS}")
     return block
 
 
 def score_clips(
-    subset_rows: list[dict[str, Any]], hyps: Hyps, *, block: str = "clip"
+    subset_rows: list[dict[str, Any]], hyps: Hyps, *, block: str = "auto"
 ) -> list[ClipScore]:
     """Per-clip counts for every row of the subset, in subset order."""
-    block = _check_block(block)
+    block = resolve_block(subset_rows, block)
     recs = _hyp_records(hyps)
     clips = []
     for row in subset_rows:
@@ -301,7 +335,7 @@ def score(
     subset_rows: list[dict[str, Any]],
     hyps: Hyps,
     *,
-    block: str = "clip",
+    block: str = "auto",
     n_boot: int = N_BOOT,
     seed: int = SEED,
 ) -> dict[str, Any]:
@@ -309,11 +343,12 @@ def score(
 
     ``subset_rows`` come from ``load_subset(..., with_audio=False)`` (any list of rows with
     ``clip_id``, ``text``, ``terms`` and ``meta`` works, e.g. a filtered subset). ``hyps`` is a
-    ``{clip_id: hyp}`` mapping or the rows of a hypotheses file. Returns::
+    ``{clip_id: hyp}`` mapping or the rows of a hypotheses file. ``block`` is the bootstrap
+    unit (:func:`resolve_block`; ``"auto"`` matches the CLI and the leaderboard). Returns::
 
         {
           "n_clips": 300, "n_scored": 300, "n_missing": 0, "n_errors": 0, "complete": true,
-          "normalizer": "es1+lc1", "block": "clip", "n_boot": 2000, "seed": 0, "n_blocks": 300,
+          "normalizer": "es1+lc1", "block": "text", "n_boot": 2000, "seed": 0, "n_blocks": 242,
           "metrics": {
             "wer": {"value": 0.081, "ci95": [0.072, 0.091], "n": 5130},
             "term_recall": {"value": 0.93, "ci95": [0.90, 0.95], "n": 412},
@@ -324,7 +359,7 @@ def score(
           "rtf_median": 0.05                     # median secs / audio duration, when known
         }
     """
-    block = _check_block(block)
+    block = resolve_block(subset_rows, block)
     clips = score_clips(subset_rows, hyps, block=block)
     n_missing = sum(c.missing for c in clips)
     n_errors = sum(1 for c in clips if c.error)
@@ -393,11 +428,16 @@ def _paired_dict(d: Any) -> dict[str, Any]:
     }
 
 
+def _macro_block(used: list[str]) -> str | list[str]:
+    """The ``block`` field of a macro result: one unit, or the unit of each subset."""
+    return used[0] if len(set(used)) == 1 else used
+
+
 def compare_macro(
     parts: Iterable[tuple[list[dict[str, Any]], Hyps, Hyps]],
     *,
     metric: str = "wer",
-    block: str = "clip",
+    block: str = "auto",
     n_boot: int = N_BOOT,
     seed: int = SEED,
 ) -> dict[str, Any]:
@@ -409,13 +449,13 @@ def compare_macro(
     ``seed`` draws the subsets in the order given, so keep a fixed order (the leaderboard uses
     fleurs_es, voxpopuli_es, mediaspeech_health).
     """
-    block = _check_block(block)
     if metric not in _DEFS:
         raise ValueError(f"unknown metric {metric!r}; choose from {ALL_METRICS}")
-    raw = []
+    raw, used = [], []
     for rows, hyps_a, hyps_b in parts:
-        ca = score_clips(rows, hyps_a, block=block)
-        cb = score_clips(rows, hyps_b, block=block)
+        used.append(resolve_block(rows, block))
+        ca = score_clips(rows, hyps_a, block=used[-1])
+        cb = score_clips(rows, hyps_b, block=used[-1])
         na, da, _ = _columns(ca, metric)
         nb, db, _ = _columns(cb, metric)
         raw.append((na, da, nb, db, [c.block for c in ca]))
@@ -424,7 +464,7 @@ def compare_macro(
         "metric": metric,
         "n_subsets": len(raw),
         "n_clips": [len(p[4]) for p in raw],
-        "block": block,
+        "block": _macro_block(used),
         "n_boot": n_boot,
         "seed": seed,
         **_paired_dict(d),
@@ -435,7 +475,7 @@ def score_macro(
     parts: Iterable[tuple[list[dict[str, Any]], Hyps]],
     *,
     metric: str = "wer",
-    block: str = "clip",
+    block: str = "auto",
     n_boot: int = N_BOOT,
     seed: int = SEED,
 ) -> dict[str, Any]:
@@ -447,12 +487,12 @@ def score_macro(
     draws the subsets in the order given, so keep a fixed order (the leaderboard uses
     fleurs_es, voxpopuli_es, mediaspeech_health).
     """
-    block = _check_block(block)
     if metric not in _DEFS:
         raise ValueError(f"unknown metric {metric!r}; choose from {ALL_METRICS}")
-    raw, n_clips = [], []
+    raw, n_clips, used = [], [], []
     for rows, hyps in parts:
-        clips = score_clips(rows, hyps, block=block)
+        used.append(resolve_block(rows, block))
+        clips = score_clips(rows, hyps, block=used[-1])
         num, den, _ = _columns(clips, metric)
         raw.append((num, den, [c.block for c in clips]))
         n_clips.append(len(clips))
@@ -463,7 +503,7 @@ def score_macro(
         "ci95": [_r(ci.lo), _r(ci.hi)],
         "n_subsets": len(raw),
         "n_clips": n_clips,
-        "block": block,
+        "block": _macro_block(used),
         "n_boot": n_boot,
         "seed": seed,
     }
@@ -474,7 +514,7 @@ def compare(
     hyps_a: Hyps,
     hyps_b: Hyps,
     *,
-    block: str = "clip",
+    block: str = "auto",
     n_boot: int = N_BOOT,
     seed: int = SEED,
 ) -> dict[str, Any]:
@@ -486,7 +526,7 @@ def compare(
     ``delta >= 0``. A difference is significant when its CI excludes 0 (and there are at least
     5 blocks). Metrics that are undefined for the subset are null.
     """
-    block = _check_block(block)
+    block = resolve_block(subset_rows, block)
     clips_a = score_clips(subset_rows, hyps_a, block=block)
     clips_b = score_clips(subset_rows, hyps_b, block=block)
 

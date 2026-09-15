@@ -5,10 +5,12 @@ in this repository follows it; change it first, in the same commit, when an inte
 change.
 
 fonendo-bench measures Spanish speech-to-text on clinical dictation and on real Spanish speech.
-Every system that the package runs is evaluated in its **default configuration**: plain
-transcription of the audio, Spanish forced when the system allows it, no prompt, context,
-vocabulary or any other per-clip information, so those numbers describe what a user gets out
-of the box. Results-only rows of the leaderboard (section 6) are evaluated by their owner and
+Every system that the package runs is evaluated in its **default configuration**: no custom
+vocabulary, keyterms or context prompt; Spanish selected where the system allows it;
+instruction-following models get only the fixed transcription instruction they need; no
+per-clip information of any kind. Those numbers describe what a user gets out of the box. The
+open-weights leaderboard rows without a runner (`runner: null`, section 6) were run by Omniloy
+outside the package under the same rules. Results-only rows are evaluated by their owner and
 state their conditions in their `note`; the published OmniScribe 2 row used patient-record
 context that included the spoken medical terms.
 
@@ -211,17 +213,21 @@ in the README; use one virtual environment per extra.
 ```
 
 * **Resumable**: clip ids already present without `error` are skipped; rerunning a finished
-  command writes nothing.
+  command writes nothing. A last line that does not parse (a run killed mid-write) is dropped
+  with a warning and its clip is redone; an unparsable line before the last one stops the run
+  with a `MalformedFileError` and leaves the file untouched.
 * Next to it, `<S>.run.json` records `Runner.info()` (model, label, kind, extra, model id,
   revision, plus any runner-specific fields such as device, dtype, decoding flags, API region),
   fonendo and Python versions, platform and finish time. It must never contain secrets.
 
 ### 4.5 Rules for every runner
 
-1. **Default configuration.** Spanish forced when the system has a language option (record it
-   in `info()`); decoding as the model card recommends (greedy or its default beam),
-   temperature 0; no prompt, context, custom vocabulary or keyword options; the same settings
-   for every subset. Settings are never tuned per subset or per clip.
+1. **Default configuration.** No custom vocabulary, keyterms or context prompt; Spanish
+   selected when the system has a language option (record it in `info()`); an
+   instruction-following model gets only the fixed transcription instruction it needs (record
+   it in `info()`), the same for every clip; decoding as the model card recommends (greedy or
+   its default beam), temperature 0; the same settings for every subset. Settings are never
+   tuned per subset or per clip.
 2. **Input.** The 16 kHz float32 array from `load_subset`. Clips are at most ~30 s: no chunking,
    no VAD, unless the system does it internally by default.
 3. **Bounded output.** Cap generation (e.g. `max_new_tokens=1024`) so a runaway loop cannot
@@ -251,13 +257,16 @@ in the README; use one virtual environment per extra.
 ## 5. Scoring (`fonendo.scoring`)
 
 ```python
-score(subset_rows, hyps, *, block="clip", n_boot=2000, seed=0) -> dict
-compare(subset_rows, hyps_a, hyps_b, *, block="clip", n_boot=2000, seed=0) -> dict
+score(subset_rows, hyps, *, block="auto", n_boot=2000, seed=0) -> dict
+compare(subset_rows, hyps_a, hyps_b, *, block="auto", n_boot=2000, seed=0) -> dict
+load_hyps(path) -> list[dict]
 ```
 
 `subset_rows` come from `load_subset(..., with_audio=False)`; `hyps` is either a
-`{clip_id: hyp}` mapping or the rows of a hypotheses file. A clip that is missing or has an
-`error` line is scored as an empty hypothesis and makes the result `complete: false`.
+`{clip_id: hyp}` mapping or the rows of a hypotheses file (`load_hyps`, which raises
+`fonendo.data.MalformedFileError` naming the file and line when a line is not a JSON object,
+has no `clip_id` or has a non-string `hyp`). A clip that is missing or has an `error` line is
+scored as an empty hypothesis and makes the result `complete: false`.
 
 ### 5.1 Normalization and alignment
 
@@ -276,8 +285,8 @@ All metrics are corpus-level (ratio of sums over clips).
 |---|---|---|
 | `wer` | all | (S + D + I) / reference words |
 | `term_recall` | clinical | share of the gold-term occurrences of the normalized reference whose every word is aligned as correct in the hypothesis (all-or-nothing per term); denominator: gold terms that occur as a span in the normalized reference |
-| `term_word_error_rate` | clinical | B-WER (Le et al., Interspeech 2021): errors on reference words that belong to the clip's gold terms / number of such words; an insertion counts here when the inserted word is a gold-term word |
-| `other_word_error_rate` | clinical | U-WER: the same on all other words |
+| `term_word_error_rate` | clinical | B-WER (Le et al., Interspeech 2021): errors on reference words that belong to the clip's gold terms / number of such words; an insertion counts here when the inserted word is a gold-term word. Function words (`FUNCTION_WORDS` in `scoring/terms.py`: "de", "la", "con", ...) are never term words, even inside a multi-word term |
+| `other_word_error_rate` | clinical | U-WER: the same on all other words, function words included |
 | `insertions_per_1k` | all | inserted words per 1,000 reference words |
 | `degenerate_rate` | all | share of clips whose output is empty (non-empty reference), loops (an n-gram absent from the reference repeated >= 4x for n = 1 or >= 3x for n = 2..8, or a 5-gram repetition rate above the reference's + 0.05) or runs away (hypothesis words > 2 x reference words + 10) |
 
@@ -287,10 +296,13 @@ Term metrics are `null` on subsets without gold terms.
 
 * 95% percentile bootstrap, 2,000 resamples, seed 0; the ratio of sums is recomputed on each
   resample.
-* `block="clip"` (default of the Python API) resamples clips; `block="text"` resamples
-  sentences through `meta["text_id"]` (all renditions of a sentence move together; the
-  conservative choice for the clinical subsets). The CLI and the leaderboard use
-  `--block auto`: sentences for clinical subsets, clips otherwise.
+* `block="clip"` resamples clips; `block="text"` resamples sentences through
+  `meta["text_id"]` (all renditions of a sentence move together; the conservative choice for
+  the clinical subsets). The default everywhere is `auto`, the rule of the leaderboard: the
+  CLI (`--block auto`) picks sentences for clinical subsets and clips otherwise, and the Python
+  API (`block="auto"`, `fonendo.scoring.resolve_block`) picks sentences when the rows carry
+  `meta["text_id"]` (the clinical subsets) and clips otherwise. The result's `block` field is
+  the unit actually used.
 * `compare` resamples A and B with the same blocks and reports, per metric, `a`, `b`,
   `delta = a - b`, its `ci95`, `p_two_sided` (twice the smaller share of resamples on either
   side of 0), `significant` and `n_blocks`. A difference is called significant only when its
@@ -309,7 +321,7 @@ Term metrics are `null` on subsets without gold terms.
   "subset": "clinical_test",
   "hyps": "results/<M>/clinical_test.jsonl",
   "n_clips": 300, "n_scored": 300, "n_missing": 0, "n_errors": 0, "complete": true,
-  "normalizer": "<version>", "block": "clip", "n_boot": 2000, "seed": 0,
+  "normalizer": "<version>", "block": "text", "n_boot": 2000, "seed": 0,
   "metrics": {
     "wer":                   {"value": 0.081, "ci95": [0.072, 0.091]},
     "term_recall":           {"value": 0.930, "ci95": [0.905, 0.953], "n": 412},
@@ -353,9 +365,14 @@ results/
 * **Results-only systems** (evaluated by their owner, no runner in `REGISTRY`) appear with
   `type: "results-only"`, `runner: null` and a `note` that the leaderboard shows verbatim.
   They are pinned to the top of every leaderboard table; the other rows are sorted by WER.
+* **Open-weights rows without a runner** (`type: "open"`, `runner: null`) were run by Omniloy
+  outside the package in the default configuration, on the same audio and with the same
+  scoring; `settings` describes the run. `configuration` and the leaderboard say so.
 * `fonendo report` scores every `<results-dir>/<model>/<subset>.jsonl` of a `test` subset
   (default `results/raw`) and writes `summary.json` + `leaderboard.md` to `--out`;
-  `--published results/summary.json` adds the published systems to the tables.
+  `--published results/summary.json` adds the published systems to the tables. The local
+  entries then get the id `<model>-local` (with `-2`, `-3`, ... if that is taken too) and the
+  label `<label> (your run)`, so ids stay unique.
 
 ## 7. CLI
 
@@ -372,9 +389,11 @@ Environment: `HF_TOKEN` (gated dataset and weights), `FONENDO_DATA_DIR`, `FONEND
 `HF_HUB_CACHE`, and the API keys of remote runners.
 
 Expected failures (unknown model, missing extra, missing API key, public subset not fetched,
-no access to the gated dataset) print one line, `fonendo <command>: error: <message>`, on
-stderr and exit with code 2; `fonendo --traceback <command> ...` shows the full traceback.
-`fonendo run` checks the runner's environment variables before it loads the subset.
+no access to the gated dataset, a malformed hypotheses file) print one line,
+`fonendo <command>: error: <message>`, on stderr and exit with code 2;
+`fonendo --traceback <command> ...` shows the full traceback. `fonendo run` checks the
+runner's environment variables before it loads the subset; `fonendo score` and
+`fonendo compare` read the hypotheses files before they load the subset.
 
 ## 8. Repository hygiene
 

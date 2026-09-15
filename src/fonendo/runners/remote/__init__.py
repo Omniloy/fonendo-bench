@@ -14,8 +14,9 @@ registry name            system                 extra                environment
                          (EXPERIMENTAL)
 =======================  =====================  ===================  ======================
 
-Every runner sends the audio in the provider's default configuration with Spanish forced: no
-context, keyterms, prompt or vocabulary of any kind. Keys are read from the environment at call
+Every runner sends the audio in the provider's default configuration: no custom vocabulary,
+keyterms or context prompt, and Spanish selected (a language hint where the service takes
+only a hint). Keys are read from the environment at call
 time and never logged or written. At most 3 connections per provider are open at once in a
 process (:func:`fonendo.runners.remote._common.provider_slot`); failed calls are retried with
 backoff inside ``transcribe``. See ``docs/remote-runners.md`` for regions and costs.

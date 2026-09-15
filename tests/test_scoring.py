@@ -11,6 +11,7 @@ from fonendo.scoring import (
     as_hyp_map,
     compare,
     compare_macro,
+    resolve_block,
     score,
     score_clip,
 )
@@ -106,13 +107,36 @@ def test_duplicate_lines_last_success_wins():
 
 
 def test_text_block_groups_renditions():
-    res_clip = score(ROWS, HYPS, n_boot=300)
+    res_clip = score(ROWS, HYPS, n_boot=300, block="clip")
     res_text = score(ROWS, HYPS, n_boot=300, block="text")
     assert res_clip["n_blocks"] == 4 and res_text["n_blocks"] == 2
     assert res_text["metrics"]["wer"]["value"] == res_clip["metrics"]["wer"]["value"]
     assert score(ROWS, HYPS, n_boot=300, block="text_id")["block"] == "text"  # alias
     with pytest.raises(ValueError):
         score(ROWS, HYPS, block="speaker")
+
+
+def test_default_block_is_auto_like_the_cli():
+    # rows with meta.text_id (clinical subsets): sentences, the published intervals
+    assert resolve_block(ROWS) == "text"
+    assert score(ROWS, HYPS, n_boot=300) == score(ROWS, HYPS, n_boot=300, block="text")
+    assert compare(ROWS, HYPS, PERFECT, n_boot=300)["block"] == "text"
+    # rows without text_id (public subsets): clips
+    public = [{**r, "meta": {"duration_s": 2.0}} for r in ROWS]
+    assert resolve_block(public) == "clip"
+    res = score(public, HYPS, n_boot=300)
+    assert res["block"] == "clip" and res["n_blocks"] == 4
+    assert res == score(public, HYPS, n_boot=300, block="clip")
+    # an explicit block always wins
+    assert resolve_block(ROWS, "clip") == "clip" and resolve_block(public, "text") == "text"
+
+
+def test_default_block_matches_the_cli_rule():
+    from fonendo.report import default_block
+
+    public = [{"clip_id": "p", "text": "hola", "terms": [], "meta": {"source_id": "1"}}]
+    assert default_block("clinical_test") == resolve_block(ROWS) == "text"
+    assert default_block("fleurs_es") == resolve_block(public) == "clip"
 
 
 def test_bootstrap_is_deterministic():

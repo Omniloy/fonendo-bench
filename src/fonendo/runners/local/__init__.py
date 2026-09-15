@@ -1,8 +1,10 @@
 """Local runners: open-weights models that run on your own hardware.
 
 Every runner transcribes in the model's **default configuration** (CONTRACT.md, section 4.5):
-Spanish forced when the model has a language option, greedy decoding (or the model card's
-default), no prompt, context or vocabulary of any kind, the same settings for every subset.
+no custom vocabulary, keyterms or context prompt; Spanish selected when the model has a
+language option; an instruction-following model (Granite Speech) gets only the model card's
+fixed transcription instruction; greedy decoding (or the model card's default); the same
+settings for every subset.
 Model revisions are pinned to Hugging Face commit hashes.
 
 The CUDA runners reproduce the published runs exactly: every runner below except

@@ -1,6 +1,6 @@
 # fonendo-bench leaderboard
 
-Generated 2026-09-15 by `fonendo report` (fonendo 0.1.0.dev0, normalizer `es1+lc1`). Every system run with this package was evaluated in its **default configuration**: plain transcription, Spanish forced where the system allows it, no prompt, context or custom vocabulary. Results-only rows (¹) were evaluated by their owner under the conditions given in their note.
+Generated 2026-09-15 by `fonendo report` (fonendo 0.1.0.dev0, normalizer `es1+lc1`). Every system except the results-only rows was evaluated in its **default configuration**: no custom vocabulary, keyterms or context prompt; Spanish selected where the system allows it; instruction-following models get only the fixed transcription instruction they need. That covers the systems run with this package and the open-weights rows without a runner (`--model` –), which Omniloy ran outside the package on the same audio, with the same scoring and the settings listed under *Systems*. Results-only rows (¹) were evaluated by their owner under the conditions given in their note.
 
 Values are percentages (insertions: per 1,000 reference words), with the 95% bootstrap interval in small type (2,000 resamples, seed 0; clinical: whole sentences resampled, real speech: clips resampled). Lower is better except for term recall. Results-only rows are pinned to the top of each table; the other rows are sorted by WER (real speech: by mean WER). Neighbouring rows whose intervals overlap may not differ, so use `fonendo compare` for a paired test before calling one system better than another.
 
@@ -126,7 +126,7 @@ License of each model, the `fonendo run --model` name of its runner and the sett
 | Nemotron 3.5 ASR Streaming | open weights | OpenMDW-1.1 | – | 1.12 s streaming chunks, language es-ES, greedy |
 | Deepgram Flux Multilingual | commercial API | commercial API | `deepgram_flux_multi` | streaming API (EU), language hint es, audio at 1x |
 | Granite Speech 4.1 2B | open weights | Apache-2.0 | `granite_speech_4p1_2b` | bf16, model card ASR prompt, greedy; language cannot be forced |
-| Whisper large-v3 clinical-assistance | open weights | Apache-2.0 | – | fp16, greedy, no timestamps |
+| Whisper large-v3 clinical-assistance | open weights | Apache-2.0 | – | fp16, greedy, no timestamps, Spanish forced (language es) |
 | Canary-1B-flash | open weights | CC-BY-4.0 | – | NeMo, greedy, source and target language es, punctuation on |
 | Phi-4-multimodal-instruct | open weights | MIT | – | bf16, model card ASR prompt, greedy; language cannot be forced |
 | Granite Speech 4.1 2B Plus | open weights | Apache-2.0 | – | bf16, model card ASR prompt, greedy; language cannot be forced |
@@ -138,8 +138,9 @@ License of each model, the `fonendo run --model` name of its runner and the sett
 
 * ¹ **OmniScribe 2 (Omniloy, self-hosted, not publicly available)**: Evaluated by Omniloy; not runnable with this package. OmniScribe 2 uses context from the patient's record. In this test that context included the medical terms spoken in each clinical clip, so its clinical numbers are a best case. It transcribed whole clips offline. Its real-speech rows used no context and are given rounded, without intervals.
 * **Voxtral Small 24B (FP8 weights)**: Run with vLLM's FP8 weight-only quantization of the bf16 checkpoint (it fits in about 28 GB of GPU memory instead of about 55 GB); the bf16 model can score slightly differently.
+* **Open-weights rows without a runner** (Gemma 4 E4B, Hojo-ASR-Multi-V1, Whisper large-v3 LoS, omniASR-LLM-7B, Granite Speech 4.1 2B NAR, MOSS-Transcribe-Diarize, Nemotron 3.5 ASR Streaming, Whisper large-v3 clinical-assistance, Canary-1B-flash, Phi-4-multimodal-instruct, Granite Speech 4.1 2B Plus, Parakeet-RNNT 1.1B es (projecte-aina), VibeVoice-ASR): not runnable with this package yet. Omniloy ran them outside the package in their default configuration (as defined at the top), on the same audio and with the same scoring; the *Systems* table gives the settings of each.
 * **Type**: *commercial API* = hosted service called through its public streaming API; *open weights* = model run locally; *results only* = evaluated by its owner, not runnable with this package.
 * **Options not used**: the commercial APIs offer custom vocabulary, keyterm or context features (Soniox, Deepgram) and Whisper accepts a text prompt. None of them was used; they could raise those systems' clinical scores.
-* **`--model`**: the `fonendo run --model` name of the runner for the row's model; `–` means the row has no runner in this package yet. *(experimental)*: the runner was not re-run with this package against the published row, so the reproduction is not verified (`fonendo models` lists these runners).
+* **`--model`**: the `fonendo run --model` name of the runner for the row's model; `–` means the row has no runner in this package yet (see *Open-weights rows without a runner* above; results-only rows are not runnable). *(experimental)*: the runner was not re-run with this package against the published row, so the reproduction is not verified (`fonendo models` lists these runners).
 * **Degenerate**: share of clips whose output is empty, loops or runs away; such outputs are scored as they are (an empty output counts every reference word as deleted). Metrics are corpus-level, so one runaway output of hundreds of words can dominate a system's WER and insertion rate; a very wide interval is the sign of it.
 * Metric definitions and the bootstrap procedure: see the README, section *Methodology*.

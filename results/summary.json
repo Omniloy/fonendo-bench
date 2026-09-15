@@ -2,7 +2,7 @@
   "benchmark": "fonendo-bench",
   "fonendo_version": "0.1.0.dev0",
   "generated": "2026-09-15",
-  "configuration": "every system run with this package: default configuration (plain transcription, Spanish forced where the system allows it, no prompt, context or vocabulary); results-only systems were evaluated by their owner, see each one's note",
+  "configuration": "default configuration (no custom vocabulary, keyterms or context prompt; Spanish selected where the system allows it; instruction-following models get only the fixed transcription instruction they need) for every system except the results-only ones. This covers the systems run with this package and the open-weights rows without a runner (runner null), which Omniloy ran outside the package on the same audio, with the same scoring and the settings given in each row. Results-only systems were evaluated by their owner under the conditions given in their note.",
   "normalizer": "es1+lc1",
   "bootstrap": {
     "ci": 0.95,
@@ -5044,7 +5044,7 @@
       "model_id": "clinical-assistance/whisper-large-v3-clinical-assistance",
       "license": "Apache-2.0",
       "runner": null,
-      "settings": "fp16, greedy, no timestamps",
+      "settings": "fp16, greedy, no timestamps, Spanish forced (language es)",
       "note": null,
       "results": {
         "clinical_test": {

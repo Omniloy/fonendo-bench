@@ -178,14 +178,57 @@ def test_build_report_scores_runs_and_merges_published(tmp_path):
         log=lambda m: None,
     )
     ids = [s["id"] for s in summary["systems"]]
-    assert ids == ["owner", "model_a", "model_b"]
+    assert ids == ["owner", "model_a-local", "model_b-local"]
     a, b = summary["systems"][1], summary["systems"][2]
-    assert a["label"] == "Model A (your run)"
+    assert a["label"] == "Model A (your run)" and a["runner"] is None
     assert a["results"]["fleurs_es"]["wer"]["value"] == 0.0
     assert b["results"]["fleurs_es"]["wer"]["value"] > 0.0
     assert "real_speech_mean_wer" not in a  # needs all three real-speech subsets
     assert (tmp_path / "out" / "summary.json").is_file()
     assert "Model A (your run)" in (tmp_path / "out" / "leaderboard.md").read_text()
+
+
+def test_build_report_local_ids_stay_unique(tmp_path):
+    data_dir = tmp_path / "data"
+    _write_public_subset(data_dir, "fleurs_es", 300)
+    raw = tmp_path / "raw"
+    (raw / "whisper_large_v3").mkdir(parents=True)
+    with open(raw / "whisper_large_v3" / "fleurs_es.jsonl", "w", encoding="utf-8") as fh:
+        for r in _public_rows(300):
+            fh.write(json.dumps({"clip_id": r["clip_id"], "hyp": r["text"]}) + "\n")
+    # the published summary already has a row with the local model's id (and its -local id)
+    pub = build_summary(
+        [
+            _entry("whisper_large_v3", "Whisper large-v3", "open"),
+            _entry("whisper_large_v3-local", "Old local run", "local-run"),
+        ]
+    )
+    published = tmp_path / "published.json"
+    published.write_text(json.dumps(pub))
+    summary = build_report(
+        raw, tmp_path / "out", data_dir=data_dir, published=published, n_boot=100,
+        log=lambda m: None,
+    )  # fmt: skip
+    ids = [s["id"] for s in summary["systems"]]
+    assert ids == ["whisper_large_v3", "whisper_large_v3-local", "whisper_large_v3-local-2"]
+    assert len(set(ids)) == len(ids)
+    local = summary["systems"][-1]
+    assert local["runner"] == "whisper_large_v3" and local["type"] == "local-run"
+    written = json.loads((tmp_path / "out" / "summary.json").read_text())
+    assert [s["id"] for s in written["systems"]] == ids
+
+
+def test_build_report_without_published_keeps_plain_ids(tmp_path):
+    data_dir = tmp_path / "data"
+    _write_public_subset(data_dir, "fleurs_es", 300)
+    raw = tmp_path / "raw"
+    (raw / "model_a").mkdir(parents=True)
+    with open(raw / "model_a" / "fleurs_es.jsonl", "w", encoding="utf-8") as fh:
+        for r in _public_rows(300):
+            fh.write(json.dumps({"clip_id": r["clip_id"], "hyp": r["text"]}) + "\n")
+    summary = build_report(raw, None, data_dir=data_dir, n_boot=100, log=lambda m: None)
+    assert [s["id"] for s in summary["systems"]] == ["model_a"]
+    assert summary["systems"][0]["label"] == "model_a"
 
 
 def test_cli_score_uses_auto_block(tmp_path, capsys):
@@ -207,6 +250,26 @@ def test_cli_score_uses_auto_block(tmp_path, capsys):
     result = json.loads(out.read_text())
     assert rc == 0 and result["block"] == "clip" and result["complete"]
     assert result["metrics"]["wer"]["value"] == 0.0
+
+
+def test_published_results_are_consistent():
+    from pathlib import Path
+
+    from fonendo.report import CONFIGURATION, DEFAULT_CONFIGURATION
+
+    results = Path(__file__).resolve().parent.parent / "results"
+    summary = json.loads((results / "summary.json").read_text(encoding="utf-8"))
+    assert summary["configuration"] == CONFIGURATION
+    assert DEFAULT_CONFIGURATION in CONFIGURATION
+    assert "open-weights rows without a runner" in CONFIGURATION
+    ids = [s["id"] for s in summary["systems"]]
+    assert len(ids) == len(set(ids))
+    # leaderboard.md is rendered from summary.json, byte for byte
+    md = (results / "leaderboard.md").read_text(encoding="utf-8")
+    assert md == render_leaderboard(summary)
+    assert DEFAULT_CONFIGURATION in md
+    no_runner = [s for s in summary["systems"] if s["type"] == "open" and not s["runner"]]
+    assert no_runner and all(s["label"] in md.split("without a runner** (")[1] for s in no_runner)
 
 
 def test_registry_merges_local_and_remote_without_heavy_imports():
