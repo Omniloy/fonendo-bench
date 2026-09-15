@@ -48,7 +48,7 @@ Each system is compared with OmniScribe 2 using a paired bootstrap on the same c
 | Voxtral Mini 4B Realtime · open | 5.8% (ours better) | 21.8% (ours better) | 13.9% (ours better) |
 | Cohere Transcribe · open | 5.2% (ours better) | 13.4% (level) | 9.3% (level) |
 
-OmniScribe 2 used context from the patient's record; in this test that context included the medical terms spoken in each clip: a best case. Clean: 147 clips. Degraded: 153 clips with noise at 20 to 5 dB SNR, and on many clips also a phone or low-bitrate codec, room reverb, or a speed or pitch change. Every other system ran in its default configuration: no custom vocabulary or prompt, and Spanish set as the language wherever the system allows it (Voxtral Realtime has no language setting). Empty outputs count as errors: Flux returned no text on 9 clinical clips, Voxtral Realtime on 7 and Nova-3 on 1. Confidence intervals resample whole sentences, because the same sentence appears in several clips.
+OmniScribe 2 used context from the patient's record; in this test that context included the medical terms spoken in each clip: a best case. Clean: 147 clips. Degraded: 153 clips with noise at 20 to 5 dB SNR, and on many clips also a phone or low-bitrate codec, room reverb, or a speed or pitch change. Every other system ran in its default configuration: no custom vocabulary, keyterms or context prompt, and Spanish selected wherever the system allows it (Voxtral Realtime has no language setting). Empty outputs count as errors: Flux returned no text on 9 clinical clips, Voxtral Realtime on 7 and Nova-3 on 1. Confidence intervals resample whole sentences, because the same sentence appears in several clips.
 
 ## Ahead on medical terms in both conditions; the WER gap is degraded audio
 
@@ -63,6 +63,8 @@ The page draws this as two slope charts, medical terms right and word error rate
 _Listen · medical terms_
 
 In 38 of the 300 clips, OmniScribe 2 gets every medical term right and all six other systems miss at least one; the reverse happens on 3. Against Soniox alone, OmniScribe 2 gets every term where Soniox misses one on 66 clips, and the reverse happens on 19.
+
+OmniScribe 2 had patient-record context that included the spoken terms, a best case, while the other six ran in their default setup.
 
 Legend: **term** medical term heard correctly · ~~wrong~~ medical term misheard · These cards mark medical terms only. In _What was said_, the medical terms are in bold.
 
@@ -350,15 +352,15 @@ Three widely used open-weights models ran on the same clips: OpenAI’s Whisper 
 | Voxtral Mini 4B Realtime · open | 59.9% (ours better) | 13.9% (ours better) | 3.1% (level) | 10.7% (ours better) | 10.5% (ours better) | 8.1% |
 | Cohere Transcribe · open | 60.4% (ours better) | 9.3% (level) | 3.3% (level) | 6.6% (theirs better) | 10.5% (ours better) | 6.8% |
 
-Open models run offline, like OmniScribe 2, in their default configuration: no prompt, and Spanish forced for Whisper and Cohere (Voxtral Realtime has no language setting). Whisper accepts a text prompt, which was not part of this comparison. Voxtral Realtime returned empty output on 7 clinical clips.
+Open models run offline, like OmniScribe 2, in their default configuration: no custom vocabulary, keyterms or context prompt, and Spanish selected for Whisper and Cohere (Voxtral Realtime has no language setting). Whisper accepts a text prompt, which was not part of this comparison. Voxtral Realtime returned empty output on 7 clinical clips.
 
 ## Method and limits
 
 _How to read this_
 
 - **OmniScribe 2** is Omniloy's self-hosted transcription system. It runs on our own infrastructure and uses context from the patient's record. In this test that context included the medical terms spoken in each clip. That is a best case: a real record may not mention every term a clinician says.
-- **Commercial APIs:** Soniox stt-rt-v5, Deepgram Nova-3 (Spanish) and Deepgram Flux (multilingual), called in their default configuration (Spanish set as the language, no custom vocabulary) and streamed in real time on their EU endpoints. Soniox and Deepgram also sell custom-vocabulary features; those were not part of this comparison.
-- **Open-source models:** Whisper large-v3-turbo, Voxtral Mini 4B Realtime and Cohere Transcribe, run offline on a GPU with no prompt, and Spanish forced where the model allows it.
+- **Commercial APIs:** Soniox stt-rt-v5, Deepgram Nova-3 (Spanish) and Deepgram Flux (multilingual), called in their default configuration (no custom vocabulary, keyterms or context prompt; Spanish selected) and streamed in real time on their EU endpoints. Soniox and Deepgram also sell custom-vocabulary features; those were not part of this comparison.
+- **Open-source models:** Whisper large-v3-turbo, Voxtral Mini 4B Realtime and Cohere Transcribe, run offline on a GPU in their default configuration: no custom vocabulary, keyterms or context prompt, and Spanish selected where the model allows it.
 - **The clinical clips are synthetic voices** (ElevenLabs and Kokoro), degraded under control. We found no open recordings of real Spain-Spanish consultations, so real-clinic numbers will differ.
 - **Modes differ.** OmniScribe 2 and the open models transcribed whole clips; the commercial APIs streamed in real time. We did not measure how much that matters.
 - **The cases are hand-picked** to illustrate each pattern. The scoreboard and charts are computed on every clip, and the error marks come automatically from the same alignment the score uses. Significance: paired bootstrap with 2,000 resamples, resampling sentences on the clinical set and clips on real speech; the real-speech average is tested as a whole.
@@ -366,7 +368,7 @@ _How to read this_
 
 ---
 
-A public, reproducible benchmark of Spanish speech-to-text on clinical dictation and real Spanish speech, published by Omniloy. The systems the package runs are scored in their default configuration; OmniScribe 2 is a results-only row (see Method and limits).
+A public, reproducible benchmark of Spanish speech-to-text on clinical dictation and real Spanish speech, published by Omniloy. Every system except OmniScribe 2 is scored in its default configuration (no custom vocabulary, keyterms or context prompt; Spanish selected where the system allows it; instruction-following models get only the fixed transcription instruction they need); OmniScribe 2 is a results-only row (see Method and limits).
 
 - **Code, runners and scoring:** [github.com/Omniloy/fonendo-bench](https://github.com/Omniloy/fonendo-bench) (Apache-2.0).
 - **Clinical audio:** gated dataset [huggingface.co/datasets/Omniloy/fonendo-bench](https://huggingface.co/datasets/Omniloy/fonendo-bench). Access is by request: email [info@omniloy.com](mailto:info@omniloy.com).

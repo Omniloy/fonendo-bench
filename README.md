@@ -17,12 +17,15 @@ units) and, as a control, real Spanish speech. It ships:
 * the [leaderboard](results/leaderboard.md) of 26 systems, three commercial APIs and 22 open
   models among them.
 
-Every system that the package runs is evaluated in its **default configuration**: plain
-transcription of the audio, Spanish forced where the system allows it, no prompt, context,
-custom vocabulary or any other per-clip information. Those numbers describe what a user gets
-out of the box. The one exception on the leaderboard is OmniScribe 2, a results-only row: it
-uses context from the patient's record, and in this test that context included the medical
-terms spoken in each clinical clip (a best case; see note ¹).
+Every system on the leaderboard except OmniScribe 2 is evaluated in its **default
+configuration**: no custom vocabulary, keyterms or context prompt; Spanish selected where the
+system allows it; instruction-following models get only the fixed transcription instruction
+they need. None of them sees the reference, the terms or any other per-clip information. That
+holds for the systems the package runs and for the open-weights rows that have no runner in the
+package yet (note ²). Those numbers describe what a user gets out of the box. The one exception
+is OmniScribe 2, a results-only row: it uses context from the patient's record, and in this
+test that context included the medical terms spoken in each clinical clip (a best case; see
+note ¹).
 
 ## Leaderboard
 
@@ -69,8 +72,10 @@ uses context from the patient's record. In this test that context included the m
 spoken in each clinical clip, so its clinical numbers are a best case. It transcribed whole
 clips offline. Its real-speech numbers used no context and are given rounded, without
 intervals.
-² No runner for this model in this package yet; its row comes from Omniloy's own run with the
-settings listed in `summary.json` (default configuration, same audio and scoring).
+² No runner for this model in this package yet; its row comes from Omniloy's own run outside
+the package, in the same default configuration, on the same audio and with the same scoring.
+Its settings are listed in [results/leaderboard.md](results/leaderboard.md) and
+`summary.json`.
 
 Reading the table:
 
@@ -168,11 +173,15 @@ fonendo report --published results/summary.json --out my_report
 ```
 
 * `fonendo run` writes one JSON line per clip, `{"clip_id", "hyp", "secs"}`, flushed as it
-  goes; a rerun skips finished clips and retries failed ones. A `.run.json` next to it records
-  the model, revision, backend versions, device and decoding settings.
+  goes; a rerun skips finished clips and retries failed ones, and a last line cut off by an
+  interrupted run is dropped with a warning and its clip transcribed again. A `.run.json` next
+  to it records the model, revision, backend versions, device and decoding settings.
 * `fonendo score` prints every metric with its 95% interval (for the clinical subset also the
   clean / degraded split); `fonendo compare` prints the paired difference A - B, its interval
   and whether it is significant.
+* `fonendo report --published results/summary.json` lists your runs next to the published
+  rows; a local run gets the id `<model>-local` and the label "(your run)", so it never
+  collides with the published row of the same model.
 * To score without downloading the dataset again, point `--hf-dir` (or `FONENDO_HF_DIR`) at a
   local clone of the dataset repository.
 
@@ -182,10 +191,16 @@ From Python:
 from fonendo.data import load_subset
 from fonendo.scoring import load_hyps, score
 
-rows = load_subset("fleurs_es", "data", with_audio=False)  # clip_id, text, terms, meta
-result = score(rows, load_hyps("results/raw/my_model/fleurs_es.jsonl"))
+rows = load_subset("clinical_test", with_audio=False)  # clip_id, text, terms, meta
+result = score(rows, load_hyps("results/raw/my_model/clinical_test.jsonl"))
 print(result["metrics"]["wer"])  # {"value": ..., "ci95": [..., ...], "n": ...}
+print(result["block"])           # "text": sentences resampled, as on the leaderboard
 ```
+
+`score()` and `compare()` use the same bootstrap rule as the CLI by default (`block="auto"`:
+whole sentences when the rows carry `meta["text_id"]`, as the clinical subsets do, clips
+otherwise), so the intervals match the published ones; pass `block="clip"` or `block="text"`
+to choose. The public subsets load the same way (`load_subset("fleurs_es", "data")`).
 
 `load_subset(name)` returns one dict per clip with `audio` as a float32 mono 16 kHz array,
 `text` (the reference), `terms` (gold medical terms, clinical subsets only) and `meta`.
@@ -245,15 +260,19 @@ Notes:
 
 ## Methodology
 
-**Default configuration.** A runner receives the 16 kHz float32 waveform and nothing else: no
-reference, no terms, no clip metadata. Spanish is forced where the system has a language
-option; decoding follows the model card (greedy or its default beam, temperature 0); output is
-capped so a loop cannot stall a run; the same settings are used for every subset. The
-settings of every published row are in `results/summary.json`. Some systems have options that
-this setting leaves out: Soniox and Deepgram offer custom vocabulary, keyterm or context
-features, and Whisper accepts a text prompt. None was used; they could raise those systems'
-clinical scores. OmniScribe 2, a results-only row, is the exception: it used patient-record
-context that included the spoken medical terms (see note ¹ under the leaderboard).
+**Default configuration.** No custom vocabulary, keyterms or context prompt; Spanish selected
+where the system allows it; instruction-following models (for example Granite Speech, Gemma and
+Phi-4) get only the fixed transcription instruction they need, the same for every clip. A
+runner receives the 16 kHz float32 waveform and nothing else: no reference, no terms, no clip
+metadata. Decoding follows the model card (greedy or its default beam, temperature 0); output
+is capped so a loop cannot stall a run; the same settings are used for every subset. The
+open-weights rows without a runner (note ²) were run by Omniloy under the same rules. The
+settings of every published row are in [results/leaderboard.md](results/leaderboard.md) and
+`results/summary.json`. Some systems have options that this setting leaves out: Soniox and
+Deepgram offer custom vocabulary, keyterm or context features, and Whisper accepts a text
+prompt. None was used; they could raise those systems' clinical scores. OmniScribe 2, a
+results-only row, is the exception: it used patient-record context that included the spoken
+medical terms (see note ¹ under the leaderboard).
 
 **Normalization.** Reference, hypothesis and gold terms go through the same Spanish
 normalizer (version `es1+lc1`): spelled-out letter names collapsed to the initialism ("eme
@@ -267,8 +286,8 @@ words written as digits and units after a number abbreviated ("quinientos miligr
 |---|---|
 | WER | (S + D + I) / reference words |
 | term recall | clinical only: share of the gold medical terms of the reference that appear in full in the hypothesis (every word of the term correct, all or nothing) |
-| B-WER | clinical only: error rate on the reference words that belong to gold terms, insertions of term words included (Le et al., 2021) |
-| U-WER | clinical only: the same on every other word |
+| B-WER | clinical only: error rate on the reference words that belong to gold terms, insertions of term words included (Le et al., 2021); function words ("de", "la", "con", ...) are never term words, even inside a multi-word term |
+| U-WER | clinical only: the same on every other word, function words included |
 | insertions / 1k | inserted words per 1,000 reference words (a proxy for hallucinated text) |
 | degenerate | share of clips whose output is empty, loops, or runs away (more than twice the reference length plus 10 words) |
 
@@ -278,9 +297,9 @@ and looping outputs are scored as they are.
 **Confidence intervals and comparisons.** 95% percentile bootstrap, 2,000 resamples, seed 0,
 the ratio of sums recomputed on each resample. The clinical subset contains several
 renditions of some sentences, so its intervals resample whole sentences (`meta.text_id`); the
-real-speech subsets resample clips. The CLI chooses this automatically (`--block auto`);
-`--block clip` resamples clips on the clinical subset too, which gives narrower intervals that
-ignore the shared sentences (point values do not change).
+real-speech subsets resample clips. The CLI and the Python API choose this automatically
+(`--block auto`, `block="auto"`); `--block clip` resamples clips on the clinical subset too,
+which gives narrower intervals that ignore the shared sentences (point values do not change).
 `fonendo compare` resamples both systems with the same blocks and reports the interval of the
 difference; a difference is called significant only when that interval excludes zero. The
 real-speech mean is the unweighted mean of the three WERs, with a stratified bootstrap.

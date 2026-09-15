@@ -21,9 +21,10 @@ fonendo run --model soniox_stt_rt_v5 --subset clinical_test
 
 ## What is sent
 
-Every runner uses the service's **default configuration** with Spanish forced. No context,
-prompt, keyterms, custom vocabulary or any other per-clip information is sent. The exact
-request settings are also written to `<subset>.run.json`.
+Every runner uses the service's **default configuration**: no custom vocabulary, keyterms or
+context prompt, and Spanish selected (Nova-3: `language=es`; Soniox: a strict Spanish
+language hint; Flux: a Spanish language hint). No per-clip information is sent. The exact request settings are also written
+to `<subset>.run.json`.
 
 * **Soniox**: the first frame is `{"model": "stt-rt-v5", "audio_format": "pcm_s16le",
   "sample_rate": 16000, "num_channels": 1, "language_hints": ["es"], "language_hints_strict":
