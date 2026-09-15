@@ -1,0 +1,6546 @@
+{
+  "benchmark": "fonendo-bench",
+  "fonendo_version": "0.1.0.dev0",
+  "generated": "2026-09-15",
+  "configuration": "every system run with this package: default configuration (plain transcription, Spanish forced where the system allows it, no prompt, context or vocabulary); results-only systems were evaluated by their owner, see each one's note",
+  "normalizer": "es1+lc1",
+  "bootstrap": {
+    "ci": 0.95,
+    "n_boot": 2000,
+    "seed": 0,
+    "block": {
+      "clinical_test": "text",
+      "fleurs_es": "clip",
+      "voxpopuli_es": "clip",
+      "mediaspeech_health": "clip"
+    }
+  },
+  "subsets": {
+    "clinical_test": {
+      "n_clips": 300,
+      "source": "omniloy/fonendo-bench",
+      "by_condition": {
+        "clean": 147,
+        "degraded": 153
+      }
+    },
+    "fleurs_es": {
+      "n_clips": 300,
+      "source": "google/fleurs (es_419, test)"
+    },
+    "voxpopuli_es": {
+      "n_clips": 200,
+      "source": "facebook/voxpopuli (es, test)"
+    },
+    "mediaspeech_health": {
+      "n_clips": 200,
+      "source": "MediaSpeech (es)"
+    }
+  },
+  "metrics": {
+    "wer": "word error rate, (S + D + I) / reference words, on normalized text",
+    "term_recall": "clinical only: share of the gold medical terms of the reference found in full in the hypothesis (every word of the term correct)",
+    "bwer": "clinical only: B-WER (Le et al., 2021), the error rate on the reference words that belong to gold medical terms",
+    "uwer": "clinical only: U-WER, the error rate on every other reference word",
+    "insertions_per_1k": "inserted words per 1,000 reference words",
+    "degenerate_rate": "share of clips whose output is empty, loops, or runs away"
+  },
+  "systems": [
+    {
+      "id": "omniscribe-2",
+      "label": "OmniScribe 2 (Omniloy, self-hosted, not publicly available)",
+      "type": "results-only",
+      "provider": "Omniloy",
+      "model_id": null,
+      "license": "proprietary",
+      "runner": null,
+      "settings": "Omniloy's self-hosted clinical transcription system",
+      "note": "Evaluated by Omniloy; not runnable with this package. OmniScribe 2 uses context from the patient's record. In this test that context included the medical terms spoken in each clinical clip, so its clinical numbers are a best case. It transcribed whole clips offline. Its real-speech rows used no context and are given rounded, without intervals.",
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.085249,
+            "ci95": [
+              0.068707,
+              0.102527
+            ]
+          },
+          "term_recall": {
+            "value": 0.856771,
+            "ci95": [
+              0.818667,
+              0.894092
+            ]
+          },
+          "bwer": {
+            "value": 0.081737,
+            "ci95": [
+              0.055757,
+              0.110269
+            ]
+          },
+          "uwer": {
+            "value": 0.085814,
+            "ci95": [
+              0.06958,
+              0.10264
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 10.258224,
+            "ci95": [
+              7.28028,
+              13.671786
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.036507,
+                "ci95": [
+                  0.027858,
+                  0.045974
+                ]
+              },
+              "term_recall": {
+                "value": 0.927083,
+                "ci95": [
+                  0.888889,
+                  0.96
+                ]
+              },
+              "bwer": {
+                "value": 0.034913,
+                "ci95": [
+                  0.018517,
+                  0.054636
+                ]
+              },
+              "uwer": {
+                "value": 0.036774,
+                "ci95": [
+                  0.027506,
+                  0.046423
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 5.726557,
+                "ci95": [
+                  3.19033,
+                  8.460327
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.132867,
+                "ci95": [
+                  0.104613,
+                  0.164291
+                ]
+              },
+              "term_recall": {
+                "value": 0.786458,
+                "ci95": [
+                  0.727273,
+                  0.843907
+                ]
+              },
+              "bwer": {
+                "value": 0.13089,
+                "ci95": [
+                  0.084858,
+                  0.185678
+                ]
+              },
+              "uwer": {
+                "value": 0.133172,
+                "ci95": [
+                  0.10512,
+                  0.16465
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 14.685315,
+                "ci95": [
+                  9.889499,
+                  20.73526
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.029,
+            "ci95": null
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 2.6,
+            "ci95": null
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": null
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.083,
+            "ci95": null
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 23.7,
+            "ci95": null
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": null
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.084,
+            "ci95": null
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 14.1,
+            "ci95": null
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": null
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.066,
+        "ci95": null,
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "soniox_stt_rt_v5",
+      "label": "Soniox stt-rt-v5",
+      "type": "api",
+      "provider": "Soniox",
+      "model_id": "stt-rt-v5",
+      "license": "commercial API",
+      "runner": "soniox_stt_rt_v5",
+      "settings": "real-time WebSocket API (EU), language hint es (strict), audio at 1x",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.071808,
+            "ci95": [
+              0.059536,
+              0.084813
+            ]
+          },
+          "term_recall": {
+            "value": 0.708333,
+            "ci95": [
+              0.655263,
+              0.761908
+            ]
+          },
+          "bwer": {
+            "value": 0.16986,
+            "ci95": [
+              0.132781,
+              0.209783
+            ]
+          },
+          "uwer": {
+            "value": 0.056046,
+            "ci95": [
+              0.045125,
+              0.067716
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 9.550761,
+            "ci95": [
+              6.704951,
+              12.451273
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.048318,
+                "ci95": [
+                  0.036611,
+                  0.060066
+                ]
+              },
+              "term_recall": {
+                "value": 0.765625,
+                "ci95": [
+                  0.697413,
+                  0.834225
+                ]
+              },
+              "bwer": {
+                "value": 0.124688,
+                "ci95": [
+                  0.083951,
+                  0.169669
+                ]
+              },
+              "uwer": {
+                "value": 0.03552,
+                "ci95": [
+                  0.025366,
+                  0.046072
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 7.874016,
+                "ci95": [
+                  4.65616,
+                  11.068464
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.094755,
+                "ci95": [
+                  0.074982,
+                  0.115803
+                ]
+              },
+              "term_recall": {
+                "value": 0.651042,
+                "ci95": [
+                  0.578197,
+                  0.721399
+                ]
+              },
+              "bwer": {
+                "value": 0.217277,
+                "ci95": [
+                  0.162786,
+                  0.276474
+                ]
+              },
+              "uwer": {
+                "value": 0.075868,
+                "ci95": [
+                  0.058199,
+                  0.095161
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 11.188811,
+                "ci95": [
+                  6.962807,
+                  16.173484
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.032559,
+            "ci95": [
+              0.027307,
+              0.038241
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.341164,
+            "ci95": [
+              2.894893,
+              5.95961
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.091497,
+            "ci95": [
+              0.074619,
+              0.111432
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 29.338637,
+            "ci95": [
+              19.528124,
+              44.368008
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.097736,
+            "ci95": [
+              0.08786,
+              0.107371
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 26.02684,
+            "ci95": [
+              21.379572,
+              31.398662
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.073931,
+        "ci95": [
+          0.067203,
+          0.081523
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "deepgram_nova3_es",
+      "label": "Deepgram Nova-3 (es)",
+      "type": "api",
+      "provider": "Deepgram",
+      "model_id": "nova-3",
+      "license": "commercial API",
+      "runner": "deepgram_nova3_es",
+      "settings": "streaming API (EU), language es, smart_format and punctuate, audio at 1x",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.114786,
+            "ci95": [
+              0.095352,
+              0.135931
+            ]
+          },
+          "term_recall": {
+            "value": 0.627604,
+            "ci95": [
+              0.567118,
+              0.687183
+            ]
+          },
+          "bwer": {
+            "value": 0.227331,
+            "ci95": [
+              0.183942,
+              0.273994
+            ]
+          },
+          "uwer": {
+            "value": 0.096695,
+            "ci95": [
+              0.078694,
+              0.116815
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 14.326141,
+            "ci95": [
+              10.697092,
+              17.997384
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.010274
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.055834,
+                "ci95": [
+                  0.043681,
+                  0.068372
+                ]
+              },
+              "term_recall": {
+                "value": 0.760417,
+                "ci95": [
+                  0.690217,
+                  0.828736
+                ]
+              },
+              "bwer": {
+                "value": 0.129676,
+                "ci95": [
+                  0.087677,
+                  0.177717
+                ]
+              },
+              "uwer": {
+                "value": 0.04346,
+                "ci95": [
+                  0.030801,
+                  0.056427
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 9.663565,
+                "ci95": [
+                  5.569584,
+                  14.326904
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.172378,
+                "ci95": [
+                  0.138551,
+                  0.208738
+                ]
+              },
+              "term_recall": {
+                "value": 0.494792,
+                "ci95": [
+                  0.413974,
+                  0.577895
+                ]
+              },
+              "bwer": {
+                "value": 0.329843,
+                "ci95": [
+                  0.26553,
+                  0.397003
+                ]
+              },
+              "uwer": {
+                "value": 0.148103,
+                "ci95": [
+                  0.115676,
+                  0.183158
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 18.881119,
+                "ci95": [
+                  13.222864,
+                  25.433024
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006536,
+                "ci95": [
+                  0.0,
+                  0.02027
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.051966,
+            "ci95": [
+              0.044961,
+              0.059088
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 9.576098,
+            "ci95": [
+              7.269122,
+              12.077938
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.099619,
+            "ci95": [
+              0.082467,
+              0.118396
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 30.333168,
+            "ci95": [
+              20.898147,
+              44.177447
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.015,
+            "ci95": [
+              0.0,
+              0.035
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.088247,
+            "ci95": [
+              0.079666,
+              0.096625
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 17.21567,
+            "ci95": [
+              13.593653,
+              21.413041
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.079944,
+        "ci95": [
+          0.073291,
+          0.087265
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "deepgram_flux_multi",
+      "label": "Deepgram Flux Multilingual",
+      "type": "api",
+      "provider": "Deepgram",
+      "model_id": "flux-general-multi",
+      "license": "commercial API",
+      "runner": "deepgram_flux_multi",
+      "settings": "streaming API (EU), language hint es, audio at 1x",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.177397,
+            "ci95": [
+              0.150071,
+              0.203682
+            ]
+          },
+          "term_recall": {
+            "value": 0.497396,
+            "ci95": [
+              0.434673,
+              0.558325
+            ]
+          },
+          "bwer": {
+            "value": 0.326948,
+            "ci95": [
+              0.277842,
+              0.377096
+            ]
+          },
+          "uwer": {
+            "value": 0.153357,
+            "ci95": [
+              0.12728,
+              0.179736
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 18.747789,
+            "ci95": [
+              14.268233,
+              23.913304
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.03,
+            "ci95": [
+              0.012616,
+              0.051616
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.073014,
+                "ci95": [
+                  0.059726,
+                  0.085099
+                ]
+              },
+              "term_recall": {
+                "value": 0.640625,
+                "ci95": [
+                  0.565646,
+                  0.715117
+                ]
+              },
+              "bwer": {
+                "value": 0.204489,
+                "ci95": [
+                  0.155604,
+                  0.260535
+                ]
+              },
+              "uwer": {
+                "value": 0.050982,
+                "ci95": [
+                  0.039559,
+                  0.062295
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 11.453114,
+                "ci95": [
+                  7.084286,
+                  16.29274
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.279371,
+                "ci95": [
+                  0.233128,
+                  0.329598
+                ]
+              },
+              "term_recall": {
+                "value": 0.354167,
+                "ci95": [
+                  0.279182,
+                  0.427878
+                ]
+              },
+              "bwer": {
+                "value": 0.455497,
+                "ci95": [
+                  0.382797,
+                  0.531572
+                ]
+              },
+              "uwer": {
+                "value": 0.25222,
+                "ci95": [
+                  0.20545,
+                  0.30301
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 25.874126,
+                "ci95": [
+                  19.18461,
+                  33.439105
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.058824,
+                "ci95": [
+                  0.025806,
+                  0.1
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.044561,
+            "ci95": [
+              0.037284,
+              0.052243
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 5.617978,
+            "ci95": [
+              3.301954,
+              8.351252
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.105586,
+            "ci95": [
+              0.088813,
+              0.125207
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 30.001658,
+            "ci95": [
+              19.952917,
+              44.710195
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.089196,
+            "ci95": [
+              0.080284,
+              0.098669
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 19.9268,
+            "ci95": [
+              14.891152,
+              26.036129
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.079781,
+        "ci95": [
+          0.072709,
+          0.08719
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "whisper_large_v3",
+      "label": "Whisper large-v3",
+      "type": "open",
+      "provider": "OpenAI",
+      "model_id": "openai/whisper-large-v3",
+      "license": "Apache-2.0",
+      "runner": "whisper_large_v3",
+      "settings": "fp16, greedy, temperature 0 without fallback, language es",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.10612,
+            "ci95": [
+              0.08634,
+              0.126626
+            ]
+          },
+          "term_recall": {
+            "value": 0.640625,
+            "ci95": [
+              0.5809,
+              0.698984
+            ]
+          },
+          "bwer": {
+            "value": 0.212005,
+            "ci95": [
+              0.169787,
+              0.256553
+            ]
+          },
+          "uwer": {
+            "value": 0.089099,
+            "ci95": [
+              0.070121,
+              0.109742
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 16.271666,
+            "ci95": [
+              11.284882,
+              22.074616
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.010241
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.051897,
+                "ci95": [
+                  0.041592,
+                  0.062724
+                ]
+              },
+              "term_recall": {
+                "value": 0.739583,
+                "ci95": [
+                  0.666667,
+                  0.803111
+                ]
+              },
+              "bwer": {
+                "value": 0.139651,
+                "ci95": [
+                  0.099271,
+                  0.186488
+                ]
+              },
+              "uwer": {
+                "value": 0.037192,
+                "ci95": [
+                  0.027939,
+                  0.046896
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 8.589835,
+                "ci95": [
+                  5.065077,
+                  12.399708
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.159091,
+                "ci95": [
+                  0.124307,
+                  0.196223
+                ]
+              },
+              "term_recall": {
+                "value": 0.541667,
+                "ci95": [
+                  0.460394,
+                  0.618557
+                ]
+              },
+              "bwer": {
+                "value": 0.287958,
+                "ci95": [
+                  0.227974,
+                  0.354006
+                ]
+              },
+              "uwer": {
+                "value": 0.139225,
+                "ci95": [
+                  0.104521,
+                  0.177439
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 23.776224,
+                "ci95": [
+                  14.800922,
+                  34.496616
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006536,
+                "ci95": [
+                  0.0,
+                  0.019737
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.028984,
+            "ci95": [
+              0.023749,
+              0.034251
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 2.042901,
+            "ci95": [
+              1.047973,
+              3.154574
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.108238,
+            "ci95": [
+              0.080337,
+              0.141559
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 21.050887,
+            "ci95": [
+              13.172642,
+              32.241578
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.172563,
+            "ci95": [
+              0.119029,
+              0.263098
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 62.355971,
+            "ci95": [
+              23.429929,
+              135.148861
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.103262,
+        "ci95": [
+          0.081495,
+          0.133388
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "whisper_large_v3_turbo",
+      "label": "Whisper large-v3-turbo",
+      "type": "open",
+      "provider": "OpenAI",
+      "model_id": "openai/whisper-large-v3-turbo",
+      "license": "MIT",
+      "runner": "whisper_large_v3_turbo",
+      "settings": "fp16, greedy, temperature 0 without fallback, language es",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.102759,
+            "ci95": [
+              0.083744,
+              0.122922
+            ]
+          },
+          "term_recall": {
+            "value": 0.638021,
+            "ci95": [
+              0.580898,
+              0.694094
+            ]
+          },
+          "bwer": {
+            "value": 0.214559,
+            "ci95": [
+              0.174619,
+              0.258956
+            ]
+          },
+          "uwer": {
+            "value": 0.084788,
+            "ci95": [
+              0.067353,
+              0.104408
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 15.387336,
+            "ci95": [
+              10.455934,
+              21.61969
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.048318,
+                "ci95": [
+                  0.038003,
+                  0.058405
+                ]
+              },
+              "term_recall": {
+                "value": 0.776042,
+                "ci95": [
+                  0.70764,
+                  0.84
+                ]
+              },
+              "bwer": {
+                "value": 0.124688,
+                "ci95": [
+                  0.084833,
+                  0.171574
+                ]
+              },
+              "uwer": {
+                "value": 0.03552,
+                "ci95": [
+                  0.02563,
+                  0.045887
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 6.084467,
+                "ci95": [
+                  3.217504,
+                  9.293101
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.155944,
+                "ci95": [
+                  0.12429,
+                  0.189688
+                ]
+              },
+              "term_recall": {
+                "value": 0.5,
+                "ci95": [
+                  0.423265,
+                  0.575289
+                ]
+              },
+              "bwer": {
+                "value": 0.308901,
+                "ci95": [
+                  0.249322,
+                  0.373061
+                ]
+              },
+              "uwer": {
+                "value": 0.132365,
+                "ci95": [
+                  0.101466,
+                  0.165691
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 24.475524,
+                "ci95": [
+                  15.522509,
+                  36.378648
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.030771,
+            "ci95": [
+              0.025347,
+              0.036024
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.192033,
+            "ci95": [
+              1.835744,
+              4.732269
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.134593,
+            "ci95": [
+              0.099711,
+              0.174596
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 21.713907,
+            "ci95": [
+              13.612903,
+              32.803244
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.116307,
+            "ci95": [
+              0.100653,
+              0.135405
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 24.942389,
+            "ci95": [
+              20.316876,
+              29.555432
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.093891,
+        "ci95": [
+          0.080604,
+          0.108727
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "parakeet_tdt_0p6b_v3",
+      "label": "Parakeet-TDT v3",
+      "type": "open",
+      "provider": "NVIDIA",
+      "model_id": "nvidia/parakeet-tdt-0.6b-v3",
+      "license": "CC-BY-4.0",
+      "runner": "parakeet_tdt_0p6b_v3",
+      "settings": "NeMo, greedy TDT decoding; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.123452,
+            "ci95": [
+              0.101174,
+              0.146422
+            ]
+          },
+          "term_recall": {
+            "value": 0.585938,
+            "ci95": [
+              0.525566,
+              0.64428
+            ]
+          },
+          "bwer": {
+            "value": 0.254151,
+            "ci95": [
+              0.208954,
+              0.303477
+            ]
+          },
+          "uwer": {
+            "value": 0.102443,
+            "ci95": [
+              0.080915,
+              0.124977
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 12.734347,
+            "ci95": [
+              9.729695,
+              16.022065
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.02251
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.061918,
+                "ci95": [
+                  0.046002,
+                  0.082424
+                ]
+              },
+              "term_recall": {
+                "value": 0.697917,
+                "ci95": [
+                  0.615385,
+                  0.776042
+                ]
+              },
+              "bwer": {
+                "value": 0.162095,
+                "ci95": [
+                  0.112218,
+                  0.217503
+                ]
+              },
+              "uwer": {
+                "value": 0.045132,
+                "ci95": [
+                  0.031479,
+                  0.064828
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 8.589835,
+                "ci95": [
+                  5.401173,
+                  12.139301
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006803,
+                "ci95": [
+                  0.0,
+                  0.020983
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.183566,
+                "ci95": [
+                  0.145953,
+                  0.221966
+                ]
+              },
+              "term_recall": {
+                "value": 0.473958,
+                "ci95": [
+                  0.4,
+                  0.549745
+                ]
+              },
+              "bwer": {
+                "value": 0.350785,
+                "ci95": [
+                  0.284687,
+                  0.421199
+                ]
+              },
+              "uwer": {
+                "value": 0.157789,
+                "ci95": [
+                  0.121743,
+                  0.194516
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 16.783217,
+                "ci95": [
+                  11.779361,
+                  22.460357
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.013072,
+                "ci95": [
+                  0.0,
+                  0.033118
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.033453,
+            "ci95": [
+              0.028022,
+              0.039491
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 2.808989,
+            "ci95": [
+              1.523602,
+              4.304551
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.078071,
+            "ci95": [
+              0.062403,
+              0.096623
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 18.398807,
+            "ci95": [
+              10.210119,
+              31.184807
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.213501,
+            "ci95": [
+              0.179715,
+              0.249603
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 35.109123,
+            "ci95": [
+              26.684745,
+              44.270645
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.045,
+            "ci95": [
+              0.02,
+              0.075
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.108342,
+        "ci95": [
+          0.095582,
+          0.121573
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "canary_1b_v2",
+      "label": "Canary-1B-v2",
+      "type": "open",
+      "provider": "NVIDIA",
+      "model_id": "nvidia/canary-1b-v2",
+      "license": "CC-BY-4.0",
+      "runner": "canary_1b_v2",
+      "settings": "NeMo, greedy, source and target language es, punctuation on",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.118323,
+            "ci95": [
+              0.097875,
+              0.139429
+            ]
+          },
+          "term_recall": {
+            "value": 0.559896,
+            "ci95": [
+              0.497312,
+              0.620058
+            ]
+          },
+          "bwer": {
+            "value": 0.255428,
+            "ci95": [
+              0.211371,
+              0.302757
+            ]
+          },
+          "uwer": {
+            "value": 0.096284,
+            "ci95": [
+              0.076999,
+              0.117206
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 18.217191,
+            "ci95": [
+              12.739053,
+              25.220138
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.055118,
+                "ci95": [
+                  0.043398,
+                  0.067101
+                ]
+              },
+              "term_recall": {
+                "value": 0.666667,
+                "ci95": [
+                  0.584149,
+                  0.743455
+                ]
+              },
+              "bwer": {
+                "value": 0.167082,
+                "ci95": [
+                  0.121712,
+                  0.221592
+                ]
+              },
+              "uwer": {
+                "value": 0.036356,
+                "ci95": [
+                  0.026818,
+                  0.046279
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 7.158196,
+                "ci95": [
+                  3.588641,
+                  11.295598
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.18007,
+                "ci95": [
+                  0.146003,
+                  0.217672
+                ]
+              },
+              "term_recall": {
+                "value": 0.453125,
+                "ci95": [
+                  0.373736,
+                  0.533982
+                ]
+              },
+              "bwer": {
+                "value": 0.348168,
+                "ci95": [
+                  0.283944,
+                  0.417692
+                ]
+              },
+              "uwer": {
+                "value": 0.154157,
+                "ci95": [
+                  0.121071,
+                  0.190379
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 29.020979,
+                "ci95": [
+                  19.047619,
+                  41.492757
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.031282,
+            "ci95": [
+              0.025867,
+              0.037068
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.192033,
+            "ci95": [
+              1.763047,
+              4.922631
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.065805,
+            "ci95": [
+              0.05345,
+              0.078603
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 15.415216,
+            "ci95": [
+              9.778213,
+              22.938202
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.116443,
+            "ci95": [
+              0.105591,
+              0.1278
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 21.011251,
+            "ci95": [
+              17.153769,
+              25.103459
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.071177,
+        "ci95": [
+          0.065382,
+          0.077225
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "voxtral_mini_3b",
+      "label": "Voxtral Mini 3B",
+      "type": "open",
+      "provider": "Mistral AI",
+      "model_id": "mistralai/Voxtral-Mini-3B-2507",
+      "license": "Apache-2.0",
+      "runner": "voxtral_mini_3b",
+      "settings": "bf16, transcription mode with language es, greedy",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.289706,
+            "ci95": [
+              0.097443,
+              0.677603
+            ]
+          },
+          "term_recall": {
+            "value": 0.578125,
+            "ci95": [
+              0.515057,
+              0.637987
+            ]
+          },
+          "bwer": {
+            "value": 0.241379,
+            "ci95": [
+              0.197914,
+              0.289241
+            ]
+          },
+          "uwer": {
+            "value": 0.297475,
+            "ci95": [
+              0.077424,
+              0.744417
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 194.375663,
+            "ci95": [
+              13.69595,
+              571.111873
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.010345
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.065855,
+                "ci95": [
+                  0.053435,
+                  0.078804
+                ]
+              },
+              "term_recall": {
+                "value": 0.651042,
+                "ci95": [
+                  0.571429,
+                  0.731707
+                ]
+              },
+              "bwer": {
+                "value": 0.182045,
+                "ci95": [
+                  0.134111,
+                  0.235169
+                ]
+              },
+              "uwer": {
+                "value": 0.046385,
+                "ci95": [
+                  0.035372,
+                  0.058726
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 9.305655,
+                "ci95": [
+                  5.673709,
+                  13.396166
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.508392,
+                "ci95": [
+                  0.12999,
+                  1.263624
+                ]
+              },
+              "term_recall": {
+                "value": 0.505208,
+                "ci95": [
+                  0.42327,
+                  0.583805
+                ]
+              },
+              "bwer": {
+                "value": 0.303665,
+                "ci95": [
+                  0.240896,
+                  0.37531
+                ]
+              },
+              "uwer": {
+                "value": 0.539952,
+                "ci95": [
+                  0.109781,
+                  1.417269
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 375.174825,
+                "ci95": [
+                  18.647773,
+                  1121.278208
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006536,
+                "ci95": [
+                  0.0,
+                  0.02027
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.02975,
+            "ci95": [
+              0.024804,
+              0.034758
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.319714,
+            "ci95": [
+              2.079189,
+              4.707465
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.080225,
+            "ci95": [
+              0.065767,
+              0.097218
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 20.553622,
+            "ci95": [
+              13.453194,
+              31.376441
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.101396,
+            "ci95": [
+              0.092106,
+              0.110885
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 19.52013,
+            "ci95": [
+              16.284435,
+              22.951055
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.070457,
+        "ci95": [
+          0.064672,
+          0.076681
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "voxtral_mini_4b_realtime",
+      "label": "Voxtral Mini 4B Realtime",
+      "type": "open",
+      "provider": "Mistral AI",
+      "model_id": "mistralai/Voxtral-Mini-4B-Realtime-2602",
+      "license": "Apache-2.0",
+      "runner": "voxtral_mini_4b_realtime",
+      "settings": "bf16, whole clip offline, 480 ms delay, greedy; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.13884,
+            "ci95": [
+              0.111803,
+              0.165647
+            ]
+          },
+          "term_recall": {
+            "value": 0.598958,
+            "ci95": [
+              0.540971,
+              0.656717
+            ]
+          },
+          "bwer": {
+            "value": 0.256705,
+            "ci95": [
+              0.210452,
+              0.307278
+            ]
+          },
+          "uwer": {
+            "value": 0.119893,
+            "ci95": [
+              0.094299,
+              0.146221
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 13.795543,
+            "ci95": [
+              10.249916,
+              17.82532
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.023333,
+            "ci95": [
+              0.006734,
+              0.041673
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.057623,
+                "ci95": [
+                  0.042011,
+                  0.075959
+                ]
+              },
+              "term_recall": {
+                "value": 0.723958,
+                "ci95": [
+                  0.645,
+                  0.794743
+                ]
+              },
+              "bwer": {
+                "value": 0.147132,
+                "ci95": [
+                  0.104761,
+                  0.197019
+                ]
+              },
+              "uwer": {
+                "value": 0.042624,
+                "ci95": [
+                  0.028342,
+                  0.059755
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 7.874016,
+                "ci95": [
+                  4.895643,
+                  11.144204
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006803,
+                "ci95": [
+                  0.0,
+                  0.020548
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.218182,
+                "ci95": [
+                  0.173386,
+                  0.266268
+                ]
+              },
+              "term_recall": {
+                "value": 0.473958,
+                "ci95": [
+                  0.395931,
+                  0.5521
+                ]
+              },
+              "bwer": {
+                "value": 0.371728,
+                "ci95": [
+                  0.297027,
+                  0.450754
+                ]
+              },
+              "uwer": {
+                "value": 0.194512,
+                "ci95": [
+                  0.150197,
+                  0.242691
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 19.58042,
+                "ci95": [
+                  13.148435,
+                  26.929242
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.039216,
+                "ci95": [
+                  0.012987,
+                  0.07286
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.030899,
+            "ci95": [
+              0.025335,
+              0.0369
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.830439,
+            "ci95": [
+              2.082237,
+              6.001255
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.106746,
+            "ci95": [
+              0.081962,
+              0.135687
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 22.874192,
+            "ci95": [
+              13.926525,
+              36.348741
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.105192,
+            "ci95": [
+              0.091869,
+              0.120669
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 15.046767,
+            "ci95": [
+              12.264125,
+              18.052038
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.080946,
+        "ci95": [
+          0.070683,
+          0.092187
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "voxtral_small_24b",
+      "label": "Voxtral Small 24B (FP8 weights)",
+      "type": "open",
+      "provider": "Mistral AI",
+      "model_id": "mistralai/Voxtral-Small-24B-2507",
+      "license": "Apache-2.0",
+      "runner": "voxtral_small_24b",
+      "settings": "vLLM, FP8 weight-only quantization, transcription mode with language es",
+      "note": "Run with vLLM's FP8 weight-only quantization of the bf16 checkpoint (it fits in about 28 GB of GPU memory instead of about 55 GB); the bf16 model can score slightly differently.",
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.084542,
+            "ci95": [
+              0.067297,
+              0.10255
+            ]
+          },
+          "term_recall": {
+            "value": 0.703125,
+            "ci95": [
+              0.646113,
+              0.757035
+            ]
+          },
+          "bwer": {
+            "value": 0.16986,
+            "ci95": [
+              0.131929,
+              0.210943
+            ]
+          },
+          "uwer": {
+            "value": 0.070827,
+            "ci95": [
+              0.055076,
+              0.088372
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 14.149275,
+            "ci95": [
+              9.791827,
+              19.174264
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.040444,
+                "ci95": [
+                  0.031038,
+                  0.049776
+                ]
+              },
+              "term_recall": {
+                "value": 0.791667,
+                "ci95": [
+                  0.719985,
+                  0.854751
+                ]
+              },
+              "bwer": {
+                "value": 0.107232,
+                "ci95": [
+                  0.068602,
+                  0.153486
+                ]
+              },
+              "uwer": {
+                "value": 0.029252,
+                "ci95": [
+                  0.021327,
+                  0.037833
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 6.442377,
+                "ci95": [
+                  3.542268,
+                  9.585005
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.127622,
+                "ci95": [
+                  0.09727,
+                  0.16134
+                ]
+              },
+              "term_recall": {
+                "value": 0.614583,
+                "ci95": [
+                  0.539257,
+                  0.686486
+                ]
+              },
+              "bwer": {
+                "value": 0.235602,
+                "ci95": [
+                  0.178934,
+                  0.3
+                ]
+              },
+              "uwer": {
+                "value": 0.110977,
+                "ci95": [
+                  0.081337,
+                  0.143677
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 21.678322,
+                "ci95": [
+                  14.204545,
+                  30.924433
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.02094,
+            "ci95": [
+              0.017053,
+              0.024825
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 1.91522,
+            "ci95": [
+              1.015351,
+              2.981605
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.075584,
+            "ci95": [
+              0.060698,
+              0.092383
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 19.890602,
+            "ci95": [
+              12.58165,
+              30.600822
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.101667,
+            "ci95": [
+              0.092845,
+              0.111096
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 23.180155,
+            "ci95": [
+              18.721971,
+              28.284601
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.066064,
+        "ci95": [
+          0.060004,
+          0.072421
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "cohere_transcribe",
+      "label": "Cohere Transcribe",
+      "type": "open",
+      "provider": "Cohere Labs",
+      "model_id": "CohereLabs/cohere-transcribe-03-2026",
+      "license": "Apache-2.0 (gated)",
+      "runner": "cohere_transcribe",
+      "settings": "bf16, greedy, language es",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.093385,
+            "ci95": [
+              0.078486,
+              0.109091
+            ]
+          },
+          "term_recall": {
+            "value": 0.604167,
+            "ci95": [
+              0.546183,
+              0.66418
+            ]
+          },
+          "bwer": {
+            "value": 0.214559,
+            "ci95": [
+              0.175708,
+              0.256822
+            ]
+          },
+          "uwer": {
+            "value": 0.073907,
+            "ci95": [
+              0.060443,
+              0.088571
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 12.026884,
+            "ci95": [
+              8.861859,
+              15.410114
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.052255,
+                "ci95": [
+                  0.041287,
+                  0.063197
+                ]
+              },
+              "term_recall": {
+                "value": 0.713542,
+                "ci95": [
+                  0.640438,
+                  0.782183
+                ]
+              },
+              "bwer": {
+                "value": 0.147132,
+                "ci95": [
+                  0.107052,
+                  0.192845
+                ]
+              },
+              "uwer": {
+                "value": 0.036356,
+                "ci95": [
+                  0.026487,
+                  0.04655
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 7.874016,
+                "ci95": [
+                  4.662507,
+                  11.309983
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.133566,
+                "ci95": [
+                  0.108008,
+                  0.16235
+                ]
+              },
+              "term_recall": {
+                "value": 0.494792,
+                "ci95": [
+                  0.413265,
+                  0.572864
+                ]
+              },
+              "bwer": {
+                "value": 0.28534,
+                "ci95": [
+                  0.226091,
+                  0.352957
+                ]
+              },
+              "uwer": {
+                "value": 0.110169,
+                "ci95": [
+                  0.0861,
+                  0.136496
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 16.083916,
+                "ci95": [
+                  10.926251,
+                  21.833809
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.032942,
+            "ci95": [
+              0.027652,
+              0.03841
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.596527,
+            "ci95": [
+              3.091548,
+              6.31963
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.06597,
+            "ci95": [
+              0.053008,
+              0.079727
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 19.724847,
+            "ci95": [
+              13.561068,
+              27.483469
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.105463,
+            "ci95": [
+              0.096452,
+              0.115153
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 28.466856,
+            "ci95": [
+              23.61222,
+              33.963515
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.068125,
+        "ci95": [
+          0.062414,
+          0.073903
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "granite_speech_4p1_2b",
+      "label": "Granite Speech 4.1 2B",
+      "type": "open",
+      "provider": "IBM",
+      "model_id": "ibm-granite/granite-speech-4.1-2b",
+      "license": "Apache-2.0",
+      "runner": "granite_speech_4p1_2b",
+      "settings": "bf16, model card ASR prompt, greedy; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.192076,
+            "ci95": [
+              0.164826,
+              0.220376
+            ]
+          },
+          "term_recall": {
+            "value": 0.46875,
+            "ci95": [
+              0.411442,
+              0.525381
+            ]
+          },
+          "bwer": {
+            "value": 0.320562,
+            "ci95": [
+              0.273667,
+              0.371394
+            ]
+          },
+          "uwer": {
+            "value": 0.171423,
+            "ci95": [
+              0.143867,
+              0.200652
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 22.108242,
+            "ci95": [
+              17.114547,
+              27.604203
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.013333,
+            "ci95": [
+              0.003236,
+              0.027397
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.099857,
+                "ci95": [
+                  0.085014,
+                  0.114839
+                ]
+              },
+              "term_recall": {
+                "value": 0.557292,
+                "ci95": [
+                  0.478036,
+                  0.636884
+                ]
+              },
+              "bwer": {
+                "value": 0.236908,
+                "ci95": [
+                  0.184998,
+                  0.30045
+                ]
+              },
+              "uwer": {
+                "value": 0.076891,
+                "ci95": [
+                  0.062525,
+                  0.091313
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 12.884753,
+                "ci95": [
+                  8.348382,
+                  17.794858
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.282168,
+                "ci95": [
+                  0.233947,
+                  0.331265
+                ]
+              },
+              "term_recall": {
+                "value": 0.380208,
+                "ci95": [
+                  0.303027,
+                  0.454569
+                ]
+              },
+              "bwer": {
+                "value": 0.408377,
+                "ci95": [
+                  0.335119,
+                  0.484605
+                ]
+              },
+              "uwer": {
+                "value": 0.262712,
+                "ci95": [
+                  0.213483,
+                  0.313176
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 31.118881,
+                "ci95": [
+                  23.012445,
+                  40.237111
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.026144,
+                "ci95": [
+                  0.006329,
+                  0.053333
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.042901,
+            "ci95": [
+              0.036679,
+              0.049412
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.341164,
+            "ci95": [
+              2.765121,
+              6.237965
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.088347,
+            "ci95": [
+              0.07067,
+              0.108117
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 24.034477,
+            "ci95": [
+              15.559533,
+              35.753028
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.213501,
+            "ci95": [
+              0.182856,
+              0.247399
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 21.146808,
+            "ci95": [
+              16.305077,
+              26.531153
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.114917,
+        "ci95": [
+          0.102379,
+          0.128631
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "omniasr_llm_7b",
+      "label": "omniASR-LLM-7B",
+      "type": "open",
+      "provider": "Meta",
+      "model_id": "facebook/omniASR-LLM-7B",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "bf16, fairseq2 reference pipeline, v1 weights, language es",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.152458,
+            "ci95": [
+              0.127729,
+              0.182193
+            ]
+          },
+          "term_recall": {
+            "value": 0.497396,
+            "ci95": [
+              0.442613,
+              0.553194
+            ]
+          },
+          "bwer": {
+            "value": 0.312899,
+            "ci95": [
+              0.269674,
+              0.359741
+            ]
+          },
+          "uwer": {
+            "value": 0.126668,
+            "ci95": [
+              0.101821,
+              0.156369
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 29.359745,
+            "ci95": [
+              19.118146,
+              44.880498
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.006667,
+            "ci95": [
+              0.0,
+              0.01678
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.078024,
+                "ci95": [
+                  0.064125,
+                  0.091664
+                ]
+              },
+              "term_recall": {
+                "value": 0.583333,
+                "ci95": [
+                  0.510524,
+                  0.663317
+                ]
+              },
+              "bwer": {
+                "value": 0.23192,
+                "ci95": [
+                  0.1798,
+                  0.288959
+                ]
+              },
+              "uwer": {
+                "value": 0.052236,
+                "ci95": [
+                  0.041527,
+                  0.063839
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 14.316392,
+                "ci95": [
+                  9.906863,
+                  18.920067
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.225175,
+                "ci95": [
+                  0.181942,
+                  0.278685
+                ]
+              },
+              "term_recall": {
+                "value": 0.411458,
+                "ci95": [
+                  0.333333,
+                  0.480772
+                ]
+              },
+              "bwer": {
+                "value": 0.397906,
+                "ci95": [
+                  0.334291,
+                  0.467868
+                ]
+              },
+              "uwer": {
+                "value": 0.198547,
+                "ci95": [
+                  0.154035,
+                  0.252347
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 44.055944,
+                "ci95": [
+                  25.378584,
+                  73.840781
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.013072,
+                "ci95": [
+                  0.0,
+                  0.033118
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.034091,
+            "ci95": [
+              0.028163,
+              0.040631
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.213483,
+            "ci95": [
+              2.333714,
+              6.773607
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.076745,
+            "ci95": [
+              0.059504,
+              0.097272
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 26.023537,
+            "ci95": [
+              14.793268,
+              43.709784
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.02,
+            "ci95": [
+              0.005,
+              0.04
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.084994,
+            "ci95": [
+              0.076255,
+              0.094277
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 13.555646,
+            "ci95": [
+              9.570685,
+              18.632507
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.065276,
+        "ci95": [
+          0.05831,
+          0.073139
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "hojo_asr_multi_v1",
+      "label": "Hojo-ASR-Multi-V1",
+      "type": "open",
+      "provider": "HojoAI",
+      "model_id": "HojoAI/Hojo-ASR-Multi-V1",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "fp16, model card recipe (beam 4, repetition penalty 2.0); language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.139901,
+            "ci95": [
+              0.118451,
+              0.162625
+            ]
+          },
+          "term_recall": {
+            "value": 0.565104,
+            "ci95": [
+              0.506561,
+              0.624353
+            ]
+          },
+          "bwer": {
+            "value": 0.255428,
+            "ci95": [
+              0.212004,
+              0.303923
+            ]
+          },
+          "uwer": {
+            "value": 0.12133,
+            "ci95": [
+              0.101138,
+              0.143436
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 22.108242,
+            "ci95": [
+              16.396115,
+              29.210343
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.077666,
+                "ci95": [
+                  0.064611,
+                  0.090642
+                ]
+              },
+              "term_recall": {
+                "value": 0.630208,
+                "ci95": [
+                  0.550789,
+                  0.709685
+                ]
+              },
+              "bwer": {
+                "value": 0.197007,
+                "ci95": [
+                  0.146814,
+                  0.253298
+                ]
+              },
+              "uwer": {
+                "value": 0.057668,
+                "ci95": [
+                  0.046405,
+                  0.069406
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 13.242663,
+                "ci95": [
+                  9.199971,
+                  17.908791
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.200699,
+                "ci95": [
+                  0.160789,
+                  0.243764
+                ]
+              },
+              "term_recall": {
+                "value": 0.5,
+                "ci95": [
+                  0.414622,
+                  0.58622
+                ]
+              },
+              "bwer": {
+                "value": 0.316754,
+                "ci95": [
+                  0.248704,
+                  0.385545
+                ]
+              },
+              "uwer": {
+                "value": 0.182809,
+                "ci95": [
+                  0.144107,
+                  0.223691
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 30.769231,
+                "ci95": [
+                  20.428278,
+                  44.238945
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.02975,
+            "ci95": [
+              0.024714,
+              0.034984
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.702758,
+            "ci95": [
+              2.327803,
+              5.225453
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.089839,
+            "ci95": [
+              0.074111,
+              0.1069
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 20.719377,
+            "ci95": [
+              13.031767,
+              31.903177
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.099498,
+            "ci95": [
+              0.090366,
+              0.109205
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 16.673444,
+            "ci95": [
+              13.754012,
+              19.816833
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.073029,
+        "ci95": [
+          0.066926,
+          0.079808
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "granite_speech_4p1_2b_nar",
+      "label": "Granite Speech 4.1 2B NAR",
+      "type": "open",
+      "provider": "IBM",
+      "model_id": "ibm-granite/granite-speech-4.1-2b-nar",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "bf16, single non-autoregressive pass; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.15405,
+            "ci95": [
+              0.133309,
+              0.174348
+            ]
+          },
+          "term_recall": {
+            "value": 0.4375,
+            "ci95": [
+              0.374658,
+              0.5
+            ]
+          },
+          "bwer": {
+            "value": 0.342273,
+            "ci95": [
+              0.294733,
+              0.393262
+            ]
+          },
+          "uwer": {
+            "value": 0.123794,
+            "ci95": [
+              0.104481,
+              0.14364
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 10.258224,
+            "ci95": [
+              7.75588,
+              12.756849
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.087688,
+                "ci95": [
+                  0.075469,
+                  0.100701
+                ]
+              },
+              "term_recall": {
+                "value": 0.53125,
+                "ci95": [
+                  0.44863,
+                  0.615
+                ]
+              },
+              "bwer": {
+                "value": 0.254364,
+                "ci95": [
+                  0.200904,
+                  0.314821
+                ]
+              },
+              "uwer": {
+                "value": 0.059758,
+                "ci95": [
+                  0.048151,
+                  0.071849
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 7.158196,
+                "ci95": [
+                  4.278037,
+                  10.150736
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.218881,
+                "ci95": [
+                  0.183679,
+                  0.255878
+                ]
+              },
+              "term_recall": {
+                "value": 0.34375,
+                "ci95": [
+                  0.266658,
+                  0.417938
+                ]
+              },
+              "bwer": {
+                "value": 0.434555,
+                "ci95": [
+                  0.366505,
+                  0.508159
+                ]
+              },
+              "uwer": {
+                "value": 0.185634,
+                "ci95": [
+                  0.151923,
+                  0.220914
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 13.286713,
+                "ci95": [
+                  9.342399,
+                  17.831999
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.038815,
+            "ci95": [
+              0.03295,
+              0.045145
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.319714,
+            "ci95": [
+              2.14507,
+              4.672365
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.081717,
+            "ci95": [
+              0.066587,
+              0.097646
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 18.233052,
+            "ci95": [
+              11.375157,
+              27.911144
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.106547,
+            "ci95": [
+              0.097451,
+              0.115878
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 16.809001,
+            "ci95": [
+              13.913324,
+              19.799662
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.075693,
+        "ci95": [
+          0.069841,
+          0.08168
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "granite_speech_4p1_2b_plus",
+      "label": "Granite Speech 4.1 2B Plus",
+      "type": "open",
+      "provider": "IBM",
+      "model_id": "ibm-granite/granite-speech-4.1-2b-plus",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "bf16, model card ASR prompt, greedy; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.262823,
+            "ci95": [
+              0.210574,
+              0.341694
+            ]
+          },
+          "term_recall": {
+            "value": 0.388021,
+            "ci95": [
+              0.327312,
+              0.448385
+            ]
+          },
+          "bwer": {
+            "value": 0.401022,
+            "ci95": [
+              0.347987,
+              0.45442
+            ]
+          },
+          "uwer": {
+            "value": 0.240608,
+            "ci95": [
+              0.183698,
+              0.330243
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 59.60382,
+            "ci95": [
+              27.294206,
+              121.971598
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.023492
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.127058,
+                "ci95": [
+                  0.110551,
+                  0.143259
+                ]
+              },
+              "term_recall": {
+                "value": 0.5,
+                "ci95": [
+                  0.41435,
+                  0.586735
+                ]
+              },
+              "bwer": {
+                "value": 0.294264,
+                "ci95": [
+                  0.231279,
+                  0.364346
+                ]
+              },
+              "uwer": {
+                "value": 0.099039,
+                "ci95": [
+                  0.084752,
+                  0.113354
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 18.96922,
+                "ci95": [
+                  13.596192,
+                  24.820591
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.395455,
+                "ci95": [
+                  0.30301,
+                  0.541011
+                ]
+              },
+              "term_recall": {
+                "value": 0.276042,
+                "ci95": [
+                  0.2,
+                  0.348485
+                ]
+              },
+              "bwer": {
+                "value": 0.513089,
+                "ci95": [
+                  0.439301,
+                  0.589421
+                ]
+              },
+              "uwer": {
+                "value": 0.37732,
+                "ci95": [
+                  0.272911,
+                  0.541517
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 99.300699,
+                "ci95": [
+                  36.757063,
+                  218.240437
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.019608,
+                "ci95": [
+                  0.0,
+                  0.045759
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.051456,
+            "ci95": [
+              0.043963,
+              0.05967
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 5.107252,
+            "ci95": [
+              3.363644,
+              7.101977
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.092989,
+            "ci95": [
+              0.077267,
+              0.109718
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 25.360517,
+            "ci95": [
+              17.849595,
+              34.623375
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.292802,
+            "ci95": [
+              0.141557,
+              0.584454
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 151.416565,
+            "ci95": [
+              13.800242,
+              428.619831
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.145749,
+        "ci95": [
+          0.09367,
+          0.245748
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "gemma4_e4b",
+      "label": "Gemma 4 E4B",
+      "type": "open",
+      "provider": "Google",
+      "model_id": "google/gemma-4-E4B-it",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "bf16, model card ASR prompt with the language set to Spanish, greedy",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.119385,
+            "ci95": [
+              0.09849,
+              0.140081
+            ]
+          },
+          "term_recall": {
+            "value": 0.632812,
+            "ci95": [
+              0.573559,
+              0.689932
+            ]
+          },
+          "bwer": {
+            "value": 0.241379,
+            "ci95": [
+              0.195664,
+              0.291242
+            ]
+          },
+          "uwer": {
+            "value": 0.099774,
+            "ci95": [
+              0.080614,
+              0.118857
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 12.734347,
+            "ci95": [
+              9.273788,
+              16.745608
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.052971,
+                "ci95": [
+                  0.042072,
+                  0.064237
+                ]
+              },
+              "term_recall": {
+                "value": 0.729167,
+                "ci95": [
+                  0.652395,
+                  0.800026
+                ]
+              },
+              "bwer": {
+                "value": 0.142145,
+                "ci95": [
+                  0.095664,
+                  0.195193
+                ]
+              },
+              "uwer": {
+                "value": 0.038028,
+                "ci95": [
+                  0.028954,
+                  0.047826
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 6.800286,
+                "ci95": [
+                  3.629731,
+                  10.346242
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.184266,
+                "ci95": [
+                  0.148333,
+                  0.223788
+                ]
+              },
+              "term_recall": {
+                "value": 0.536458,
+                "ci95": [
+                  0.458311,
+                  0.618557
+                ]
+              },
+              "bwer": {
+                "value": 0.34555,
+                "ci95": [
+                  0.271823,
+                  0.425005
+                ]
+              },
+              "uwer": {
+                "value": 0.159403,
+                "ci95": [
+                  0.126349,
+                  0.196681
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 18.531469,
+                "ci95": [
+                  12.6344,
+                  25.281348
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.031793,
+            "ci95": [
+              0.026864,
+              0.037366
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.447395,
+            "ci95": [
+              2.119146,
+              4.965535
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.099785,
+            "ci95": [
+              0.081867,
+              0.119577
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 27.183822,
+            "ci95": [
+              17.924145,
+              40.44523
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.100854,
+            "ci95": [
+              0.092264,
+              0.110198
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 29.822421,
+            "ci95": [
+              24.632371,
+              35.734621
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.077477,
+        "ci95": [
+          0.070723,
+          0.084871
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "nemotron_3p5_asr_streaming",
+      "label": "Nemotron 3.5 ASR Streaming",
+      "type": "open",
+      "provider": "NVIDIA",
+      "model_id": "nvidia/nemotron-3.5-asr-streaming-0.6b",
+      "license": "OpenMDW-1.1",
+      "runner": null,
+      "settings": "1.12 s streaming chunks, language es-ES, greedy",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.169791,
+            "ci95": [
+              0.148494,
+              0.192088
+            ]
+          },
+          "term_recall": {
+            "value": 0.440104,
+            "ci95": [
+              0.380098,
+              0.496066
+            ]
+          },
+          "bwer": {
+            "value": 0.357599,
+            "ci95": [
+              0.312581,
+              0.411068
+            ]
+          },
+          "uwer": {
+            "value": 0.139602,
+            "ci95": [
+              0.118338,
+              0.16128
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 19.101521,
+            "ci95": [
+              14.943206,
+              23.650851
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.013333,
+            "ci95": [
+              0.003215,
+              0.027121
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.098067,
+                "ci95": [
+                  0.083362,
+                  0.112453
+                ]
+              },
+              "term_recall": {
+                "value": 0.557292,
+                "ci95": [
+                  0.475676,
+                  0.635479
+                ]
+              },
+              "bwer": {
+                "value": 0.256858,
+                "ci95": [
+                  0.203557,
+                  0.315065
+                ]
+              },
+              "uwer": {
+                "value": 0.071458,
+                "ci95": [
+                  0.058203,
+                  0.085127
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 13.600573,
+                "ci95": [
+                  9.259174,
+                  18.148985
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.23986,
+                "ci95": [
+                  0.203039,
+                  0.278761
+                ]
+              },
+              "term_recall": {
+                "value": 0.322917,
+                "ci95": [
+                  0.245959,
+                  0.4
+                ]
+              },
+              "bwer": {
+                "value": 0.463351,
+                "ci95": [
+                  0.39423,
+                  0.535886
+                ]
+              },
+              "uwer": {
+                "value": 0.205408,
+                "ci95": [
+                  0.169934,
+                  0.242791
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 24.475524,
+                "ci95": [
+                  17.96165,
+                  31.957279
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.026144,
+                "ci95": [
+                  0.006329,
+                  0.054422
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.04073,
+            "ci95": [
+              0.034634,
+              0.047194
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.596527,
+            "ci95": [
+              2.989213,
+              6.535183
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.097298,
+            "ci95": [
+              0.077792,
+              0.118622
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 20.553622,
+            "ci95": [
+              12.221694,
+              33.278432
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.025,
+            "ci95": [
+              0.005,
+              0.05
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.099092,
+            "ci95": [
+              0.089851,
+              0.108756
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 15.588993,
+            "ci95": [
+              12.513007,
+              18.919078
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.07904,
+        "ci95": [
+          0.07168,
+          0.086666
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "phi4_multimodal",
+      "label": "Phi-4-multimodal-instruct",
+      "type": "open",
+      "provider": "Microsoft",
+      "model_id": "microsoft/Phi-4-multimodal-instruct",
+      "license": "MIT",
+      "runner": null,
+      "settings": "bf16, model card ASR prompt, greedy; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.240361,
+            "ci95": [
+              0.103893,
+              0.497513
+            ]
+          },
+          "term_recall": {
+            "value": 0.591146,
+            "ci95": [
+              0.526878,
+              0.651752
+            ]
+          },
+          "bwer": {
+            "value": 0.247765,
+            "ci95": [
+              0.201687,
+              0.296449
+            ]
+          },
+          "uwer": {
+            "value": 0.239171,
+            "ci95": [
+              0.085098,
+              0.536439
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 133.533781,
+            "ci95": [
+              12.924748,
+              381.374677
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.010274
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.066571,
+                "ci95": [
+                  0.054878,
+                  0.07808
+                ]
+              },
+              "term_recall": {
+                "value": 0.661458,
+                "ci95": [
+                  0.587912,
+                  0.734383
+                ]
+              },
+              "bwer": {
+                "value": 0.179551,
+                "ci95": [
+                  0.135513,
+                  0.230591
+                ]
+              },
+              "uwer": {
+                "value": 0.047639,
+                "ci95": [
+                  0.037418,
+                  0.057615
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 12.884753,
+                "ci95": [
+                  9.209842,
+                  16.745849
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.41014,
+                "ci95": [
+                  0.143377,
+                  0.924908
+                ]
+              },
+              "term_recall": {
+                "value": 0.520833,
+                "ci95": [
+                  0.439153,
+                  0.602172
+                ]
+              },
+              "bwer": {
+                "value": 0.319372,
+                "ci95": [
+                  0.249984,
+                  0.393855
+                ]
+              },
+              "uwer": {
+                "value": 0.424132,
+                "ci95": [
+                  0.123015,
+                  1.019745
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 251.398601,
+                "ci95": [
+                  13.616627,
+                  745.537125
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006536,
+                "ci95": [
+                  0.0,
+                  0.02027
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.031027,
+            "ci95": [
+              0.02563,
+              0.036815
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.830439,
+            "ci95": [
+              2.376418,
+              5.494557
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.079397,
+            "ci95": [
+              0.063527,
+              0.096357
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 20.885132,
+            "ci95": [
+              15.425299,
+              27.091524
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.19005,
+            "ci95": [
+              0.10399,
+              0.342724
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 93.533957,
+            "ci95": [
+              20.364811,
+              232.131487
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.100158,
+        "ci95": [
+          0.070339,
+          0.15219
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "whisper_clinical_cl",
+      "label": "Whisper large-v3 clinical-assistance",
+      "type": "open",
+      "provider": "clinical-assistance",
+      "model_id": "clinical-assistance/whisper-large-v3-clinical-assistance",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "fp16, greedy, no timestamps",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.201804,
+            "ci95": [
+              0.143063,
+              0.300927
+            ]
+          },
+          "term_recall": {
+            "value": 0.554688,
+            "ci95": [
+              0.497422,
+              0.610818
+            ]
+          },
+          "bwer": {
+            "value": 0.282248,
+            "ci95": [
+              0.23545,
+              0.331603
+            ]
+          },
+          "uwer": {
+            "value": 0.188873,
+            "ci95": [
+              0.124495,
+              0.300199
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 61.903077,
+            "ci95": [
+              19.113939,
+              142.607365
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.01031
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.167144,
+                "ci95": [
+                  0.07115,
+                  0.346688
+                ]
+              },
+              "term_recall": {
+                "value": 0.666667,
+                "ci95": [
+                  0.594585,
+                  0.739362
+                ]
+              },
+              "bwer": {
+                "value": 0.194514,
+                "ci95": [
+                  0.142857,
+                  0.25187
+                ]
+              },
+              "uwer": {
+                "value": 0.162557,
+                "ci95": [
+                  0.056139,
+                  0.369212
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 87.687903,
+                "ci95": [
+                  7.309433,
+                  250.185576
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006803,
+                "ci95": [
+                  0.0,
+                  0.020979
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.235664,
+                "ci95": [
+                  0.194252,
+                  0.279894
+                ]
+              },
+              "term_recall": {
+                "value": 0.442708,
+                "ci95": [
+                  0.360825,
+                  0.523566
+                ]
+              },
+              "bwer": {
+                "value": 0.374346,
+                "ci95": [
+                  0.306953,
+                  0.44332
+                ]
+              },
+              "uwer": {
+                "value": 0.214286,
+                "ci95": [
+                  0.174019,
+                  0.257965
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 36.713287,
+                "ci95": [
+                  26.511575,
+                  49.568628
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.036134,
+            "ci95": [
+              0.030414,
+              0.041789
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.085802,
+            "ci95": [
+              2.370628,
+              6.149184
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.141223,
+            "ci95": [
+              0.082116,
+              0.243239
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 56.025195,
+            "ci95": [
+              14.749461,
+              134.052933
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.02,
+            "ci95": [
+              0.005,
+              0.04
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.14003,
+            "ci95": [
+              0.1202,
+              0.164168
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 23.180155,
+            "ci95": [
+              18.336498,
+              28.306328
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.005,
+            "ci95": [
+              0.0,
+              0.015
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.105796,
+        "ci95": [
+          0.083876,
+          0.140488
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "moss_transcribe_diarize",
+      "label": "MOSS-Transcribe-Diarize",
+      "type": "open",
+      "provider": "OpenMOSS",
+      "model_id": "OpenMOSS-Team/MOSS-Transcribe-Diarize",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "bf16, greedy, speaker tags removed from the output; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.156703,
+            "ci95": [
+              0.13314,
+              0.180876
+            ]
+          },
+          "term_recall": {
+            "value": 0.486979,
+            "ci95": [
+              0.422855,
+              0.544798
+            ]
+          },
+          "bwer": {
+            "value": 0.307791,
+            "ci95": [
+              0.259565,
+              0.35989
+            ]
+          },
+          "uwer": {
+            "value": 0.132416,
+            "ci95": [
+              0.109776,
+              0.154212
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 23.346304,
+            "ci95": [
+              18.000261,
+              29.122831
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.006667,
+            "ci95": [
+              0.0,
+              0.016949
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.090193,
+                "ci95": [
+                  0.07095,
+                  0.111721
+                ]
+              },
+              "term_recall": {
+                "value": 0.609375,
+                "ci95": [
+                  0.530039,
+                  0.688451
+                ]
+              },
+              "bwer": {
+                "value": 0.219451,
+                "ci95": [
+                  0.16624,
+                  0.279795
+                ]
+              },
+              "uwer": {
+                "value": 0.068533,
+                "ci95": [
+                  0.051398,
+                  0.089199
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 11.453114,
+                "ci95": [
+                  7.489234,
+                  16.07186
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006803,
+                "ci95": [
+                  0.0,
+                  0.020837
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.221678,
+                "ci95": [
+                  0.183722,
+                  0.261362
+                ]
+              },
+              "term_recall": {
+                "value": 0.364583,
+                "ci95": [
+                  0.28866,
+                  0.443916
+                ]
+              },
+              "bwer": {
+                "value": 0.400524,
+                "ci95": [
+                  0.330612,
+                  0.470588
+                ]
+              },
+              "uwer": {
+                "value": 0.194108,
+                "ci95": [
+                  0.156593,
+                  0.233639
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 34.965035,
+                "ci95": [
+                  25.167732,
+                  45.438436
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.006536,
+                "ci95": [
+                  0.0,
+                  0.02027
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.035368,
+            "ci95": [
+              0.029868,
+              0.040953
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 4.341164,
+            "ci95": [
+              2.688732,
+              6.079392
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.216476,
+            "ci95": [
+              0.174865,
+              0.265324
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 27.018067,
+            "ci95": [
+              18.437599,
+              39.102515
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.108852,
+            "ci95": [
+              0.093648,
+              0.127809
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 27.517961,
+            "ci95": [
+              17.349863,
+              43.30824
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.120232,
+        "ci95": [
+          0.104635,
+          0.136509
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "vibevoice_asr",
+      "label": "VibeVoice-ASR",
+      "type": "open",
+      "provider": "Microsoft",
+      "model_id": "microsoft/VibeVoice-ASR",
+      "license": "MIT",
+      "runner": null,
+      "settings": "bf16, transformers port, greedy; language cannot be forced",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.676512,
+            "ci95": [
+              0.219346,
+              1.307053
+            ]
+          },
+          "term_recall": {
+            "value": 0.5,
+            "ci95": [
+              0.435354,
+              0.558904
+            ]
+          },
+          "bwer": {
+            "value": 0.446999,
+            "ci95": [
+              0.28094,
+              0.734328
+            ]
+          },
+          "uwer": {
+            "value": 0.713406,
+            "ci95": [
+              0.18983,
+              1.448285
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 504.244782,
+            "ci95": [
+              57.005827,
+              1130.727351
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.016667,
+            "ci95": [
+              0.003333,
+              0.033113
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.07194,
+                "ci95": [
+                  0.058781,
+                  0.0858
+                ]
+              },
+              "term_recall": {
+                "value": 0.666667,
+                "ci95": [
+                  0.593214,
+                  0.73545
+                ]
+              },
+              "bwer": {
+                "value": 0.179551,
+                "ci95": [
+                  0.136813,
+                  0.232112
+                ]
+              },
+              "uwer": {
+                "value": 0.053907,
+                "ci95": [
+                  0.042362,
+                  0.067112
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 13.242663,
+                "ci95": [
+                  8.626655,
+                  18.403774
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 1.267133,
+                "ci95": [
+                  0.364855,
+                  2.374303
+                ]
+              },
+              "term_recall": {
+                "value": 0.333333,
+                "ci95": [
+                  0.260199,
+                  0.413043
+                ]
+              },
+              "bwer": {
+                "value": 0.727749,
+                "ci95": [
+                  0.412496,
+                  1.301966
+                ]
+              },
+              "uwer": {
+                "value": 1.350282,
+                "ci95": [
+                  0.31945,
+                  2.632186
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 983.916084,
+                "ci95": [
+                  99.342064,
+                  2089.902354
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.03268,
+                "ci95": [
+                  0.006494,
+                  0.064516
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.03358,
+            "ci95": [
+              0.026817,
+              0.041346
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 5.362615,
+            "ci95": [
+              3.570268,
+              7.320997
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.006667,
+            "ci95": [
+              0.0,
+              0.016667
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.103431,
+            "ci95": [
+              0.085394,
+              0.124254
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 35.803083,
+            "ci95": [
+              25.313887,
+              50.858205
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.01,
+            "ci95": [
+              0.0,
+              0.025
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.241155,
+            "ci95": [
+              0.099121,
+              0.494853
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 162.532195,
+            "ci95": [
+              30.739616,
+              404.357658
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.015,
+            "ci95": [
+              0.0,
+              0.035
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.126055,
+        "ci95": [
+          0.0768,
+          0.218767
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "whisper_large_v3_los",
+      "label": "Whisper large-v3 LoS",
+      "type": "open",
+      "provider": "BSC-LT",
+      "model_id": "BSC-LT/whisper-large-v3-LoS",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "fp16, greedy, no timestamps, language es",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.150336,
+            "ci95": [
+              0.129248,
+              0.173643
+            ]
+          },
+          "term_recall": {
+            "value": 0.520833,
+            "ci95": [
+              0.456915,
+              0.579223
+            ]
+          },
+          "bwer": {
+            "value": 0.289911,
+            "ci95": [
+              0.245304,
+              0.340515
+            ]
+          },
+          "uwer": {
+            "value": 0.1279,
+            "ci95": [
+              0.107892,
+              0.149056
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 22.992572,
+            "ci95": [
+              18.28161,
+              27.841891
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.079814,
+                "ci95": [
+                  0.064433,
+                  0.094889
+                ]
+              },
+              "term_recall": {
+                "value": 0.640625,
+                "ci95": [
+                  0.560429,
+                  0.722503
+                ]
+              },
+              "bwer": {
+                "value": 0.194514,
+                "ci95": [
+                  0.14074,
+                  0.257749
+                ]
+              },
+              "uwer": {
+                "value": 0.060593,
+                "ci95": [
+                  0.048279,
+                  0.072455
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 17.179671,
+                "ci95": [
+                  12.326284,
+                  22.76593
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.219231,
+                "ci95": [
+                  0.184394,
+                  0.257462
+                ]
+              },
+              "term_recall": {
+                "value": 0.401042,
+                "ci95": [
+                  0.324003,
+                  0.473965
+                ]
+              },
+              "bwer": {
+                "value": 0.390052,
+                "ci95": [
+                  0.324739,
+                  0.457688
+                ]
+              },
+              "uwer": {
+                "value": 0.192897,
+                "ci95": [
+                  0.157736,
+                  0.230001
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 28.671329,
+                "ci95": [
+                  20.893184,
+                  37.06923
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.045455,
+            "ci95": [
+              0.033111,
+              0.063387
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 11.74668,
+            "ci95": [
+              3.328374,
+              27.450706
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.01
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.087187,
+            "ci95": [
+              0.070776,
+              0.104869
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 23.205702,
+            "ci95": [
+              14.66503,
+              34.842116
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.02,
+            "ci95": [
+              0.005,
+              0.04
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.251728,
+            "ci95": [
+              0.184843,
+              0.331773
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 98.549546,
+            "ci95": [
+              47.224585,
+              165.194571
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.07,
+            "ci95": [
+              0.035,
+              0.105
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.128123,
+        "ci95": [
+          0.106272,
+          0.155984
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "canary_1b_flash",
+      "label": "Canary-1B-flash",
+      "type": "open",
+      "provider": "NVIDIA",
+      "model_id": "nvidia/canary-1b-flash",
+      "license": "CC-BY-4.0",
+      "runner": null,
+      "settings": "NeMo, greedy, source and target language es, punctuation on",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.205164,
+            "ci95": [
+              0.176085,
+              0.235608
+            ]
+          },
+          "term_recall": {
+            "value": 0.471354,
+            "ci95": [
+              0.412986,
+              0.530772
+            ]
+          },
+          "bwer": {
+            "value": 0.330779,
+            "ci95": [
+              0.285902,
+              0.383487
+            ]
+          },
+          "uwer": {
+            "value": 0.184972,
+            "ci95": [
+              0.156,
+              0.215596
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 27.767952,
+            "ci95": [
+              21.999451,
+              33.627113
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.063333,
+            "ci95": [
+              0.037409,
+              0.09215
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.098067,
+                "ci95": [
+                  0.083424,
+                  0.113566
+                ]
+              },
+              "term_recall": {
+                "value": 0.598958,
+                "ci95": [
+                  0.521031,
+                  0.6754
+                ]
+              },
+              "bwer": {
+                "value": 0.21197,
+                "ci95": [
+                  0.165887,
+                  0.265889
+                ]
+              },
+              "uwer": {
+                "value": 0.07898,
+                "ci95": [
+                  0.064961,
+                  0.094568
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 20.758769,
+                "ci95": [
+                  14.747917,
+                  27.891825
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.30979,
+                "ci95": [
+                  0.260037,
+                  0.365244
+                ]
+              },
+              "term_recall": {
+                "value": 0.34375,
+                "ci95": [
+                  0.270525,
+                  0.417931
+                ]
+              },
+              "bwer": {
+                "value": 0.455497,
+                "ci95": [
+                  0.384003,
+                  0.533961
+                ]
+              },
+              "uwer": {
+                "value": 0.287328,
+                "ci95": [
+                  0.236856,
+                  0.344296
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 34.615385,
+                "ci95": [
+                  25.884961,
+                  43.950298
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.124183,
+                "ci95": [
+                  0.074312,
+                  0.180645
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.043795,
+            "ci95": [
+              0.035258,
+              0.052891
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 8.171604,
+            "ci95": [
+              5.512312,
+              11.029494
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.003333,
+            "ci95": [
+              0.0,
+              0.01
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.079894,
+            "ci95": [
+              0.063722,
+              0.098535
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 25.029007,
+            "ci95": [
+              15.351208,
+              39.002131
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.02,
+            "ci95": [
+              0.005,
+              0.04
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.389183,
+            "ci95": [
+              0.332235,
+              0.445756
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 14.775654,
+            "ci95": [
+              11.714803,
+              18.117094
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.32,
+            "ci95": [
+              0.255,
+              0.38
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.170957,
+        "ci95": [
+          0.150635,
+          0.193108
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    },
+    {
+      "id": "aina_parakeet_rnnt_1p1b_es",
+      "label": "Parakeet-RNNT 1.1B es (projecte-aina)",
+      "type": "open",
+      "provider": "Projecte AINA",
+      "model_id": "projecte-aina/parakeet-rnnt-1.1b_cv17_es_ep18_1270h",
+      "license": "Apache-2.0",
+      "runner": null,
+      "settings": "NeMo, greedy RNNT decoding",
+      "note": null,
+      "results": {
+        "clinical_test": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "text",
+          "wer": {
+            "value": 0.27821,
+            "ci95": [
+              0.239834,
+              0.316454
+            ]
+          },
+          "term_recall": {
+            "value": 0.40625,
+            "ci95": [
+              0.349878,
+              0.461728
+            ]
+          },
+          "bwer": {
+            "value": 0.402299,
+            "ci95": [
+              0.350765,
+              0.456498
+            ]
+          },
+          "uwer": {
+            "value": 0.258263,
+            "ci95": [
+              0.219338,
+              0.297032
+            ]
+          },
+          "insertions_per_1k": {
+            "value": 11.673152,
+            "ci95": [
+              8.443897,
+              15.086212
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.13,
+            "ci95": [
+              0.093016,
+              0.169451
+            ]
+          },
+          "by_condition": {
+            "clean": {
+              "n_clips": 147,
+              "wer": {
+                "value": 0.113457,
+                "ci95": [
+                  0.098781,
+                  0.128242
+                ]
+              },
+              "term_recall": {
+                "value": 0.536458,
+                "ci95": [
+                  0.458552,
+                  0.614527
+                ]
+              },
+              "bwer": {
+                "value": 0.244389,
+                "ci95": [
+                  0.190367,
+                  0.30607
+                ]
+              },
+              "uwer": {
+                "value": 0.091517,
+                "ci95": [
+                  0.07826,
+                  0.104755
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 11.095204,
+                "ci95": [
+                  6.875187,
+                  15.725721
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.0,
+                "ci95": [
+                  0.0,
+                  0.0
+                ]
+              }
+            },
+            "degraded": {
+              "n_clips": 153,
+              "wer": {
+                "value": 0.439161,
+                "ci95": [
+                  0.375599,
+                  0.501069
+                ]
+              },
+              "term_recall": {
+                "value": 0.276042,
+                "ci95": [
+                  0.209412,
+                  0.346536
+                ]
+              },
+              "bwer": {
+                "value": 0.568063,
+                "ci95": [
+                  0.484185,
+                  0.650006
+                ]
+              },
+              "uwer": {
+                "value": 0.41929,
+                "ci95": [
+                  0.353929,
+                  0.4826
+                ]
+              },
+              "insertions_per_1k": {
+                "value": 12.237762,
+                "ci95": [
+                  7.15659,
+                  17.779503
+                ]
+              },
+              "degenerate_rate": {
+                "value": 0.254902,
+                "ci95": [
+                  0.187899,
+                  0.324841
+                ]
+              }
+            }
+          }
+        },
+        "fleurs_es": {
+          "n_clips": 300,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.060521,
+            "ci95": [
+              0.051767,
+              0.069243
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 3.958121,
+            "ci95": [
+              2.357786,
+              5.752555
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "voxpopuli_es": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.163269,
+            "ci95": [
+              0.136079,
+              0.1948
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 15.746726,
+            "ci95": [
+              8.254605,
+              27.74617
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.03,
+            "ci95": [
+              0.01,
+              0.055
+            ]
+          }
+        },
+        "mediaspeech_health": {
+          "n_clips": 200,
+          "complete": true,
+          "block": "clip",
+          "wer": {
+            "value": 0.293344,
+            "ci95": [
+              0.261145,
+              0.326911
+            ]
+          },
+          "term_recall": null,
+          "bwer": null,
+          "uwer": null,
+          "insertions_per_1k": {
+            "value": 13.284533,
+            "ci95": [
+              10.540401,
+              16.259797
+            ]
+          },
+          "degenerate_rate": {
+            "value": 0.015,
+            "ci95": [
+              0.0,
+              0.035
+            ]
+          }
+        }
+      },
+      "real_speech_mean_wer": {
+        "value": 0.172378,
+        "ci95": [
+          0.158235,
+          0.187923
+        ],
+        "subsets": [
+          "fleurs_es",
+          "voxpopuli_es",
+          "mediaspeech_health"
+        ]
+      }
+    }
+  ]
+}
