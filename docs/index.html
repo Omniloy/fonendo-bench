@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>fonendo-bench · Spanish clinical speech-to-text</title>
+<meta name="description" content="fonendo-bench: Spanish clinical speech-to-text. Audio cases and scores: OmniScribe 2 against Soniox, Deepgram, Whisper, Voxtral and Cohere on Spanish clinical audio.">
+<meta property="og:title" content="fonendo-bench · Spanish clinical speech-to-text">
+<meta property="og:description" content="OmniScribe 2 against Soniox, Deepgram, Whisper, Voxtral and Cohere on Spanish clinical audio, with the audio to listen to.">
+<meta property="og:url" content="https://omniloy.github.io/fonendo-bench/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Ccircle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%230b6e5a%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#f4f6f3; --surface:#ffffff; --sunk:#eaeee9;
+  --ink:#141c19; --ink-2:#4d5853; --ink-3:#77827c;
+  --rule:#d6dcd6; --rule-2:#e6eae5;
+  --accent:#0b6e5a; --accent-ink:#0a5a4a; --accent-wash:#dcece6;
+  --ok:#0a6b4f; --ok-wash:#d6efe4; --bad:#a3231b; --bad-wash:#f9dedb; --minor-wash:#f1ead9;
+  --warn:#8f5500; --warn-wash:#f6ead3;
+  --c-os2:#1baf7a; --c-soniox:#2a78d6; --c-nova:#eb6834; --c-flux:#eda100; --c-whisper:#e87ba4; --c-voxtral:#008300; --c-cohere:#4a3aa7;
+  --f-display:"Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --ground:#101513; --surface:#171e1b; --sunk:#1f2824;
+    --ink:#e8eeeb; --ink-2:#a9b4ae; --ink-3:#7f8a85;
+    --rule:#2c3632; --rule-2:#232c28;
+    --accent:#45b89b; --accent-ink:#6fd0b5; --accent-wash:#18332b;
+    --ok:#6fd0b5; --ok-wash:#173a30; --bad:#f39a90; --bad-wash:#43211e; --minor-wash:#352d1c;
+    --warn:#e0a54a; --warn-wash:#33281a;
+    --c-os2:#199e70; --c-soniox:#3987e5; --c-nova:#d95926; --c-flux:#c98500; --c-whisper:#d55181; --c-voxtral:#008300; --c-cohere:#9085e9;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#101513; --surface:#171e1b; --sunk:#1f2824;
+  --ink:#e8eeeb; --ink-2:#a9b4ae; --ink-3:#7f8a85;
+  --rule:#2c3632; --rule-2:#232c28;
+  --accent:#45b89b; --accent-ink:#6fd0b5; --accent-wash:#18332b;
+  --ok:#6fd0b5; --ok-wash:#173a30; --bad:#f39a90; --bad-wash:#43211e; --minor-wash:#352d1c;
+  --warn:#e0a54a; --warn-wash:#33281a;
+  --c-os2:#199e70; --c-soniox:#3987e5; --c-nova:#d95926; --c-flux:#c98500; --c-whisper:#d55181; --c-voxtral:#008300; --c-cohere:#9085e9;
+}
+*{box-sizing:border-box}
+html{background:var(--ground)}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;margin:0;padding-inline:20px;padding-block:0 80px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1100px;margin-inline:auto}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;color:var(--ink)}
+p{margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.eyebrow{font-family:var(--f-display);font-size:12.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.mast{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;align-items:baseline;padding-block:22px 18px;border-bottom:1px solid var(--rule)}
+.brand{font-family:var(--f-display);font-weight:800;font-size:15px}
+.brand span{color:var(--accent-ink)}
+.mast .meta{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-3)}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px 52px;padding-block:44px 8px;align-items:start}
+.hero h1{font-size:clamp(32px,4.8vw,52px);line-height:1.04;letter-spacing:-.025em;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent-ink)}
+.lede{font-size:18.5px;color:var(--ink-2);max-width:60ch;margin-top:16px}
+.lede b{color:var(--ink);font-weight:600}
+.claims{display:grid;gap:0;border-top:2px solid var(--ink)}
+.claim{padding:14px 0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:96px minmax(0,1fr);gap:4px 16px;align-items:baseline}
+.claim .n{font-family:var(--f-display);font-weight:800;font-size:28px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.claim .n.caveat{color:var(--warn)}
+.claim p{font-family:var(--f-display);font-size:14.5px;color:var(--ink-2);line-height:1.45}
+.claim p b{color:var(--ink);font-weight:600}
+
+section{padding-block:56px 0}
+.sh{display:grid;gap:8px;margin-bottom:22px;max-width:74ch}
+.sh h2{font-size:clamp(24px,3vw,31px);letter-spacing:-.02em;font-weight:750;line-height:1.12}
+.sh p{color:var(--ink-2);font-size:16.5px}
+
+/* scoreboard */
+.board{overflow-x:auto;background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+table{border-collapse:collapse;width:100%;font-family:var(--f-display);font-size:14px}
+th,td{padding:10px 10px;text-align:left;border-bottom:1px solid var(--rule-2);vertical-align:middle}
+thead th{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+tr.ours td{background:var(--accent-wash)}
+tr.gap td{padding:4px 12px;background:var(--sunk);font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.sys{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.sys i{width:10px;height:10px;border-radius:50%;flex:none}
+.sys small{font-weight:400;color:var(--ink-3)}
+.bar{display:flex;align-items:center;gap:8px;min-width:128px}
+.bar .t{flex:1;height:8px;background:var(--rule-2);border-radius:4px;position:relative;overflow:hidden}
+.bar .t i{position:absolute;left:0;top:0;bottom:0;border-radius:0 4px 4px 0}
+.bar .v{font-family:var(--f-mono);font-size:13.5px;width:52px;text-align:right;font-variant-numeric:tabular-nums}
+.vs{font-size:12px;font-weight:600;white-space:nowrap;padding:2px 7px;border-radius:3px;display:inline-block}
+.vs.win{background:var(--ok-wash);color:var(--ok)}
+.vs.tie{background:var(--sunk);color:var(--ink-2)}
+.vs.lose{background:var(--bad-wash);color:var(--bad)}
+.foot{font-family:var(--f-display);font-size:13px;color:var(--ink-3);margin-top:10px}
+
+/* slope chart */
+.slopes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;padding:16px 16px 10px}
+.panel h3{font-size:15px;font-weight:700;margin-bottom:2px}
+.panel .sub{font-family:var(--f-display);font-size:12.5px;color:var(--ink-3)}
+.panel svg{width:100%;height:auto;display:block;margin-top:6px}
+.who small{font-weight:400;color:var(--ink-3)}
+.panel svg text{font-family:var(--f-display)}
+
+/* cases */
+.cases{display:grid;gap:18px}
+.case{background:var(--surface);border:1px solid var(--rule);border-radius:6px;display:grid;grid-template-columns:250px minmax(0,1fr);overflow:hidden}
+.case .side{padding:16px 18px;border-right:1px solid var(--rule);display:grid;gap:10px;align-content:start;background:var(--sunk)}
+.case .side .id{font-family:var(--f-mono);font-size:12px;color:var(--ink-3);overflow-wrap:anywhere}
+.case audio{width:100%;height:36px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-display);font-size:12px;font-weight:600;padding:2px 8px;border-radius:3px;background:var(--surface);border:1px solid var(--rule);color:var(--ink-2)}
+.chip.noisy{background:var(--warn-wash);border-color:transparent;color:var(--warn)}
+.chip.type{background:var(--bad-wash);border-color:transparent;color:var(--bad)}
+.case .main{padding:16px 20px 14px;display:grid;gap:0}
+.said{font-size:16.5px;padding-bottom:12px;border-bottom:1px dashed var(--rule);margin-bottom:6px}
+.said .lab{display:block;font-family:var(--f-display);font-size:11.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);margin-bottom:2px}
+.said b{font-weight:600;border-bottom:2px solid var(--accent)}
+.out{display:grid;grid-template-columns:176px minmax(0,1fr);gap:4px 14px;padding:6px 0;border-bottom:1px solid var(--rule-2);align-items:baseline}
+.out:last-child{border-bottom:0}
+.out .who{display:flex;gap:7px;align-items:center;font-family:var(--f-display);font-size:13px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.out .who i{width:9px;height:9px;border-radius:50%;flex:none}
+.out.ours .who{color:var(--ink)}
+.out .txt{font-size:15.5px;color:var(--ink)}
+.out .empty{font-family:var(--f-display);font-style:italic;color:var(--ink-3)}
+mark{color:inherit;border-radius:2px;padding:0 2px}
+mark.ok{background:var(--ok-wash);color:var(--ok);font-weight:600}
+mark.bad{background:var(--bad-wash);color:var(--bad);text-decoration:line-through;text-decoration-thickness:1px}
+mark.minor{background:var(--minor-wash)}
+.note{display:block;font-family:var(--f-display);font-size:12.5px;color:var(--bad);margin-top:2px}
+.note.info{color:var(--ink-3)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--f-display);font-size:13px;color:var(--ink-2);margin-bottom:14px}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+
+/* method */
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px 44px}
+.points{margin:0;padding:0}
+.points li{list-style:none;padding:10px 0;border-bottom:1px solid var(--rule-2);font-size:15.5px;color:var(--ink-2)}
+.points li b{color:var(--ink);font-weight:600}
+
+.sys .lbl{display:grid;gap:1px}
+.sys .lbl small{white-space:normal;max-width:24ch;line-height:1.3}
+/* footer */
+.site-foot{margin-top:64px;padding-block:22px 0;border-top:2px solid var(--ink);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px 44px;font-family:var(--f-display);font-size:14.5px;color:var(--ink-2)}
+.site-foot .brand{font-size:17px;margin-bottom:6px;color:var(--ink)}
+.site-foot ul{margin:0;padding:0;display:grid;gap:10px}
+.site-foot li{list-style:none}
+.site-foot li b{color:var(--ink);font-weight:600}
+
+@media (max-width:860px){
+  .hero,.slopes,.cols,.site-foot{grid-template-columns:minmax(0,1fr)}
+  .case{grid-template-columns:minmax(0,1fr)}
+  .case .side{border-right:0;border-bottom:1px solid var(--rule)}
+  .out{grid-template-columns:minmax(0,1fr)}
+  .claim{grid-template-columns:80px minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div class="brand"><a href="https://github.com/Omniloy/fonendo-bench" style="color:inherit;text-decoration:none">fonendo<span>-bench</span></a></div>
+    <div class="meta">OmniScribe 2 vs commercial APIs and open-source models · Spanish clinical audio · 15 Sep 2026</div>
+  </header>
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">OmniScribe 2 · Omniloy’s self-hosted clinical transcription</div>
+      <h1>OmniScribe 2 gets more medical terms right than <em>six widely used speech systems</em>, commercial and open source, in their default configuration.</h1>
+      <p class="lede">OmniScribe 2 is Omniloy's self-hosted transcription system, and it uses context from the patient's record (in this test that context included the medical terms spoken in each clip: a best case). On 300 Spanish clinical clips with synthetic voices it gets <b>85.7%</b> of medical terms right. The six other systems, three commercial APIs and three open-source models in their default setup, get <b>50–71%</b>. On clean audio it also has the <b>lowest word error rate</b> of all seven. On degraded audio (noise, phone codecs, reverb), Soniox has a lower word error rate and Cohere Transcribe is level. OmniScribe 2 can also write a look-alike drug name instead of the one spoken.</p>
+    </div>
+    <div class="claims" id="claims"></div>
+  </div>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">300 clinical clips · clean and degraded</div>
+      <h2>The scoreboard</h2>
+      <p>Each system is compared with OmniScribe 2 using a paired bootstrap on the same clips. <span class="vs win">ours better</span> and <span class="vs lose">theirs better</span> mean the 95% interval of the difference excludes zero; <span class="vs tie">level</span> means it includes zero. <em>Terms right</em> counts a term only if every word of it is correct.</p>
+    </div>
+    <div class="board"><table id="board"></table></div>
+    <p class="foot">OmniScribe 2 used context from the patient's record; in this test that context included the medical terms spoken in each clip: a best case. Clean: 147 clips. Degraded: 153 clips with noise at 20 to 5 dB SNR, and on many clips also a phone or low-bitrate codec, room reverb, or a speed or pitch change. Every other system ran in its default configuration: no custom vocabulary or prompt, and Spanish set as the language wherever the system allows it (Voxtral Realtime has no language setting). Empty outputs count as errors: Flux returned no text on 9 clinical clips, Voxtral Realtime on 7 and Nova-3 on 1. Confidence intervals resample whole sentences, because the same sentence appears in several clips.</p>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">Where the difference comes from</div>
+      <h2>Ahead on medical terms in both conditions; the WER gap is degraded audio</h2>
+      <p>Each line runs from the 147 clean clips to the 153 degraded ones. OmniScribe 2 stays ahead of every system on medical terms in both conditions. On word error rate it is the lowest of the seven on clean audio. On degraded audio Soniox is lower and Cohere Transcribe is level, and that is where Soniox’s overall WER lead comes from.</p>
+    </div>
+    <div class="slopes">
+      <div class="panel"><h3>Medical terms right</h3><div class="sub">higher is better</div><svg id="slopeR" role="img" aria-label="Term recall, clean vs degraded, per system"></svg></div>
+      <div class="panel"><h3>Word error rate</h3><div class="sub">lower is better</div><svg id="slopeW" role="img" aria-label="WER, clean vs degraded, per system"></svg></div>
+    </div>
+    <p class="foot">The clean and degraded groups are mostly different sentences, so each line compares two groups of clips, not the same clips getting worse.</p>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">Listen · medical terms</div>
+      <h2>OmniScribe 2 gets the term; the other six miss it</h2>
+      <p>In 38 of the 300 clips, OmniScribe 2 gets every medical term right and all six other systems miss at least one; the reverse happens on 3. Against Soniox alone, OmniScribe 2 gets every term where Soniox misses one on 66 clips, and the reverse happens on 19.</p>
+    </div>
+    <div class="legend"><span><mark class="ok">term</mark> medical term heard correctly</span><span><mark class="bad">wrong</mark> medical term misheard</span><span>These cards mark medical terms only.</span></div>
+    <div class="cases" id="c-wins"></div>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">Real speech · three public sets</div>
+      <h2>On real speech, it is among the most accurate</h2>
+      <p>On three real-speech sets together (FLEURS, VoxPopuli and MediaSpeech: real speakers, general Spanish, no medical terms), OmniScribe 2 has 6.6% average WER. That is level with Cohere Transcribe (6.8%), which is better on VoxPopuli and worse on MediaSpeech, and significantly ahead of the other five systems on this page (7.4–9.4%), by a paired bootstrap on the three-set average. In the <a href="https://github.com/Omniloy/fonendo-bench/blob/main/results/leaderboard.md">full leaderboard</a>, two open models that are not on this page, omniASR-LLM-7B (6.5%) and Voxtral Small 24B (6.6%), have a slightly lower or the same average.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">Listen · where it loses</div>
+      <h2>Where it loses: degraded audio, and look-alike drug names</h2>
+      <p>On degraded clips OmniScribe 2 makes 3 or more errors on 47 clips, Soniox on 37. The cases below are clips where Soniox makes at most 2 errors and OmniScribe 2 at least 4 more, plus one clean clip. The recognizer can drop the rest of a sentence or replace it with fluent Spanish that was never said. The clinically serious failure is different: it can write a look-alike drug name instead of the one spoken. This happened on one clean clip too. The next things to fix are noise-robust input, a guard that catches cut-off or invented output, and tighter handling of look-alike drug names.</p>
+    </div>
+    <div class="legend"><span><mark class="ok">term</mark> correct term</span><span><mark class="bad">wrong</mark> misheard or inserted word</span><span>Missing words are listed under each transcript.</span></div>
+    <div class="cases" id="c-noise"></div>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">A fair check · inserted words</div>
+      <h2>Inserted words: the others do it too</h2>
+      <p>An inserted word is one that appears in the transcript but was never said. On the clinical set, OmniScribe 2’s rate of inserted words is level with Soniox, Nova-3, Voxtral Realtime and Cohere, and lower than Flux and Whisper-turbo. On FLEURS real speech it has the lowest rate of the seven (level with Whisper-turbo and Voxtral Realtime). Its distinctive weakness is the one shown above: occasionally writing a look-alike drug name.</p>
+    </div>
+    <div class="board"><table id="ins"></table></div>
+    <p class="foot">Per 1,000 reference words, scored the same way for every system; labels use a paired bootstrap against OmniScribe 2. VoxPopuli and MediaSpeech are left out because their references skip some real speech, for example a Greek phrase at the start of one MediaSpeech clip, and any system that transcribes it is counted as inserting words.</p>
+    <div class="cases" id="c-inserted" style="margin-top:18px"></div>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">Open source models</div>
+      <h2>Against three widely used open models</h2>
+      <p>Three widely used open-weights models ran on the same clips: OpenAI’s Whisper large-v3-turbo, Mistral’s Voxtral Mini 4B Realtime and Cohere Transcribe. On clinical audio, OmniScribe 2 gets 85.7% of medical terms right against 60–64% for the three. On real human speech, Cohere Transcribe is the strongest of the three: level with OmniScribe 2 on average, better on VoxPopuli parliament speech and worse on MediaSpeech. The <a href="https://github.com/Omniloy/fonendo-bench/blob/main/results/leaderboard.md">full leaderboard</a> has 22 open models; the best of them on clinical audio, Voxtral Small 24B, has the same clinical WER as OmniScribe 2 (8.5%) and gets 70.3% of medical terms right.</p>
+    </div>
+    <div class="board"><table id="open"></table></div>
+    <p class="foot">Open models run offline, like OmniScribe 2, in their default configuration: no prompt, and Spanish forced for Whisper and Cohere (Voxtral Realtime has no language setting). Whisper accepts a text prompt, which was not part of this comparison. Voxtral Realtime returned empty output on 7 clinical clips.</p>
+  </section>
+
+  <section>
+    <div class="sh">
+      <div class="eyebrow">How to read this</div>
+      <h2>Method and limits</h2>
+    </div>
+    <div class="cols">
+      <ul class="points">
+        <li><b>OmniScribe 2</b> is Omniloy's self-hosted transcription system. It runs on our own infrastructure and uses context from the patient's record. In this test that context included the medical terms spoken in each clip. That is a best case: a real record may not mention every term a clinician says.</li>
+        <li><b>Commercial APIs:</b> Soniox stt-rt-v5, Deepgram Nova-3 (Spanish) and Deepgram Flux (multilingual), called in their default configuration (Spanish set as the language, no custom vocabulary) and streamed in real time on their EU endpoints. Soniox and Deepgram also sell custom-vocabulary features; those were not part of this comparison.</li>
+        <li><b>Open-source models:</b> Whisper large-v3-turbo, Voxtral Mini 4B Realtime and Cohere Transcribe, run offline on a GPU with no prompt, and Spanish forced where the model allows it.</li>
+      </ul>
+      <ul class="points">
+        <li><b>The clinical clips are synthetic voices</b> (ElevenLabs and Kokoro), degraded under control. We found no open recordings of real Spain-Spanish consultations, so real-clinic numbers will differ.</li>
+        <li><b>Modes differ.</b> OmniScribe 2 and the open models transcribed whole clips; the commercial APIs streamed in real time. We did not measure how much that matters.</li>
+        <li><b>The cases are hand-picked</b> to illustrate each pattern. The scoreboard and charts are computed on every clip, and the error marks come automatically from the same alignment the score uses. Significance: paired bootstrap with 2,000 resamples, resampling sentences on the clinical set and clips on real speech; the real-speech average is tested as a whole.</li>
+        <li><b>Full results</b> for every system are in the <a href="https://github.com/Omniloy/fonendo-bench">GitHub repository</a> (<a href="https://github.com/Omniloy/fonendo-bench/blob/main/results/leaderboard.md">leaderboard</a>). <b>Audio:</b> the clips on this page are from the fonendo-bench clinical test set, © Omniloy, published for listening only (not for redistribution or training; see the dataset license). Voices: ElevenLabs and Kokoro-82M (Apache-2.0). Degraded clips mix in noise from MUSAN (Snyder, Chen and Povey, 2015; CC BY 4.0) and room impulse responses from OpenSLR SLR28 (Ko et al., 2017; Apache-2.0).</li>
+      </ul>
+    </div>
+  </section>
+  <footer class="site-foot">
+    <div>
+      <div class="brand">fonendo<span>-bench</span></div>
+      <p>A public, reproducible benchmark of Spanish speech-to-text on clinical dictation and real Spanish speech, published by Omniloy. The systems the package runs are scored in their default configuration; OmniScribe 2 is a results-only row (see Method and limits).</p>
+    </div>
+    <ul>
+      <li><b>Code, runners and scoring:</b> <a href="https://github.com/Omniloy/fonendo-bench">github.com/Omniloy/fonendo-bench</a> (Apache-2.0). A text version of this page is in <a href="https://github.com/Omniloy/fonendo-bench/blob/main/SHOWCASE.md">SHOWCASE.md</a>.</li>
+      <li><b>Clinical audio:</b> gated dataset <a href="https://huggingface.co/datasets/omniloy/fonendo-bench">huggingface.co/datasets/omniloy/fonendo-bench</a>. Access is by request: email <a href="mailto:info@omniloy.com">info@omniloy.com</a>.</li>
+      <li><b>Public sets:</b> FLEURS, VoxPopuli and MediaSpeech are rebuilt from their original sources with <span class="mono">fonendo fetch</span>.</li>
+    </ul>
+  </footer>
+</div>
+
+<script>
+const DATA = {"cases": [{"id": "urg_019__kokoro", "section": "wins", "type": null, "ref_html": "Recuerdo al residente que la <b>cilastatina</b> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado.", "noise": "clean", "degr": [], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/urg_019__kokoro.mp3", "hyp_html": {"os2": "Recuerdo al residente que la <mark class=\"ok\">cilastatina</mark> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado.", "soniox": "Recuerdo al residente que la <mark class=\"bad\">silastatina</mark> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado.", "nova3": "Recuerdo al residente que la <mark class=\"bad\">silastatina</mark> no tiene actividad antibacteriana, y solo evita la degradación renal del antibiótico asociado.", "flux": "Recuerdo al residente que la <mark class=\"bad\">silastatina</mark> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado.", "whisper": "Recuerdo al residente que la <mark class=\"bad\">silastatina</mark> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado.", "voxtral": "Recuerdo al residente que la <mark class=\"bad\">silastatina</mark> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado.", "cohere": "Recuerdo al residente que la <mark class=\"bad\">silastatina</mark> no tiene actividad antibacteriana y solo evita la degradación renal del antibiótico asociado."}, "note": {"os2": [], "soniox": [], "nova3": [], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "urg_005", "section": "wins", "type": null, "ref_html": "Si la crisis migrañosa no cede, valorad <b>lasmiditan</b> como alternativa, pero advertid a la paciente de que no conduzca después.", "noise": "clean", "degr": [], "region": "peninsular", "voice": "synthetic voice · ElevenLabs", "mp3": "audio/urg_005.mp3", "hyp_html": {"os2": "Si la crisis migrañosa no cede, valorad <mark class=\"ok\">lasmiditan</mark> como alternativa, pero advertid a la paciente de que no conduzca después.", "soniox": "Si la crisis migrañosa no cede, Valorat <mark class=\"bad\">las miditan</mark> como alternativa, pero advertida la paciente de que no conduzca después.", "nova3": "Si la crisis migrañosa no cede, valorad <mark class=\"bad\">las MIDITAN</mark> como alternativa. Pero advertid a la paciente de que no conduzca después.", "flux": "Si la crisis migrañosa no cede, valorad <mark class=\"bad\">las meditan</mark> como alternativa, pero advertid a la paciente de que no conduzca después.", "whisper": "Si la crisis migrañosa no cede, Valorad <mark class=\"bad\">las miditan</mark> como alternativa, pero advertid a la paciente de que no conduzca después.", "voxtral": "Si la crisis migrañosa no cede, valorad <mark class=\"bad\">las miditan</mark> como alternativa, pero advertid a la paciente de que no conduzca después.", "cohere": "Si la crisis migrañosa no cede, valorad <mark class=\"bad\">las miditan</mark> como alternativa, pero advertid a la paciente de que no conduzca después."}, "note": {"os2": [], "soniox": [], "nova3": [], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "prue_054__kokoro", "section": "wins", "type": null, "ref_html": "<b>Uro-TAC</b> con <b>Iomeron</b> en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria.", "noise": "clean", "degr": [], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/prue_054__kokoro.mp3", "hyp_html": {"os2": "<mark class=\"ok\">Uro-TAC</mark> con <mark class=\"ok\">iomeron</mark> en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria.", "soniox": "Uro <mark class=\"bad\">te hace</mark> con <mark class=\"bad\">yomeron</mark> en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria.", "nova3": "<mark class=\"bad\">Urotheast</mark> con en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria.", "flux": "<mark class=\"bad\">Urotease</mark> con en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria.", "whisper": "<mark class=\"bad\">Uroteace</mark> con <mark class=\"ok\">iomeron</mark> en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria.", "voxtral": "", "cohere": "<mark class=\"bad\">Urotease</mark> con <mark class=\"ok\">iomeron</mark> en fase excretora, que el cólico se le repite y el sedimento tiene microhematuria."}, "note": {"os2": [], "soniox": [], "nova3": ["drops “iomeron”"], "flux": ["drops “iomeron”"], "whisper": [], "voxtral": ["no output"], "cohere": []}}, {"id": "prue_064", "section": "wins", "type": null, "ref_html": "Cursa un <b>SPECT cerebral de perfusión</b> con <b>Ceretec</b> dentro del estudio prequirúrgico de la epilepsia refractaria.", "noise": "clean", "degr": [], "region": "peninsular", "voice": "synthetic voice · ElevenLabs", "mp3": "audio/prue_064.mp3", "hyp_html": {"os2": "Cursa un <mark class=\"ok\">SPECT cerebral de perfusión</mark> con <mark class=\"ok\">ceretec</mark> dentro del estudio prequirúrgico de la epilepsia refractaria.", "soniox": "Cursa un <mark class=\"bad\">espectro</mark> cerebral de perfusión con <mark class=\"ok\">CERETEC</mark> dentro del estudio prequirúrgico de la epilepsia refractaria.", "nova3": "Cursa un <mark class=\"bad\">spec</mark> cerebral de perfusión con <mark class=\"bad\">Zeretec</mark>, dentro del estudio prequirúrgico de la epilepsia refractaria.", "flux": "Cursa un <mark class=\"bad\">espén</mark> cerebral de perfusión con <mark class=\"bad\">Cretec</mark> dentro del estudio prequirúrgico de la epilepsia refractaria.", "whisper": "Cursa un <mark class=\"bad\">SPEC</mark> cerebral de perfusión con <mark class=\"ok\">Ceretec</mark> dentro del estudio prequirúrgico de la epilepsia refractaria.", "voxtral": "Cursa un <mark class=\"bad\">espectro</mark> cerebral de perfusión con <mark class=\"ok\">Ceretec</mark> dentro del estudio prequirúrgico de la epilepsia refractaria.", "cohere": "Cursa un <mark class=\"bad\">SPEC</mark> cerebral de perfusión con <mark class=\"ok\">CERETEC</mark> dentro del estudio prequirúrgico de la epilepsia refractaria."}, "note": {"os2": [], "soniox": [], "nova3": [], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "mint_059__kokoro", "section": "wins", "type": null, "ref_html": "Se administra <b>tropisetron</b> intravenoso por vómitos incoercibles en el contexto del <b>síndrome de gastroparesia.</b>", "noise": "clean", "degr": [], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/mint_059__kokoro.mp3", "hyp_html": {"os2": "Se administra <mark class=\"ok\">tropisetron</mark> intravenoso por vómitos incoercibles en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>.", "soniox": "Se administra <mark class=\"bad\">Tropicetron</mark> intravenoso por vómitos incoercibles, en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>.", "nova3": "Se administra <mark class=\"bad\">Tropiceton</mark> intravenoso por vómitos incoercibles en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>.", "flux": "Se administra <mark class=\"bad\">tropicetron</mark> intravenoso por vómitos incuercibles en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>.", "whisper": "Se administra <mark class=\"bad\">tropicétron</mark> intravenoso por vómitos incoercibles en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>.", "voxtral": "Se administra <mark class=\"bad\">tropicetron</mark> intravenoso por vómitos incoercibles en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>.", "cohere": "Se administra <mark class=\"bad\">tropicetrón</mark> intravenoso por vómitos incoercibles en el contexto del <mark class=\"ok\">síndrome de gastroparesia</mark>."}, "note": {"os2": [], "soniox": [], "nova3": [], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "mint_036__kokoro__snr10", "section": "wins", "type": null, "ref_html": "Se confirma <b>neumonía micobacteriana</b> y se inicia <b>pirazinamida</b> dentro de la pauta cuádruple durante los dos primeros meses.", "noise": "degraded", "degr": ["SNR 10 dB", "6-voice babble"], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/mint_036__kokoro__snr10.mp3", "hyp_html": {"os2": "Se confirma <mark class=\"ok\">neumonía micobacteriana</mark> y se inicia <mark class=\"ok\">pirazinamida</mark> dentro de la pauta cuádruple durante los dos primeros meses.", "soniox": "Se confirma <mark class=\"ok\">neumonía micobacteriana</mark> y se inicia <mark class=\"bad\">piracinamida</mark> dentro de la pauta cuádruple durante los 2 primeros meses.", "nova3": "Se confirma <mark class=\"ok\">neumonía micobacteriana</mark> y se inicia <mark class=\"bad\">piracinamida</mark> dentro de la pauta cuádruple durante los 2 primeros meses.", "flux": "se confirma neumonía <mark class=\"bad\">mycobacterium</mark> y se inicia <mark class=\"bad\">piracinamida</mark> dentro de las pautas cuádruple durante los dos primeros meses.", "whisper": "se confirma <mark class=\"ok\">neumonía micobacteriana</mark> y se inicia <mark class=\"bad\">piracinamida</mark> dentro de la pauta cuádruple durante los dos primeros meses.", "voxtral": "Se confirma <mark class=\"ok\">neumonía micobacteriana</mark> y se inicia <mark class=\"bad\">piracinamida</mark> dentro de la pauta cuádruple durante los dos primeros meses.", "cohere": "Se confirma neumonía <mark class=\"bad\">mycobacteriana</mark> y se inicia <mark class=\"bad\">piracinamida</mark> dentro de la pauta cuádruple durante los dos primeros meses."}, "note": {"os2": [], "soniox": [], "nova3": [], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "mint_014__kokoro", "section": "noise", "type": "Writes a look-alike drug", "ref_html": "Ante la crisis adrenérgica con cifras tensionales extremas se administró <b>fentolamina</b> intravenosa antes de introducir el betabloqueo.", "noise": "clean", "degr": [], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/mint_014__kokoro.mp3", "hyp_html": {"os2": "Ante la crisis adrenérgica con cifras tensionales extremas, se administró <mark class=\"bad\">fenfluramina</mark> intravenosa antes de introducir el <mark class=\"bad\">beta bloqueo</mark>.", "soniox": "Ante la crisis adrenérgica con cifras tensionales extremas, se administró <mark class=\"ok\">fentolamina</mark> intravenosa antes de introducir el betabloqueo.", "nova3": "Ante la crisis adrenérgica, con cifras tensionales extremas, se administró <mark class=\"ok\">fentolamina</mark> intravenosa antes de introducir el betabloqueo.", "flux": "ante la crisis adrenérgica con cifras tensionales extremas, se administró <mark class=\"ok\">fentolamina</mark> intravenosa antes de introducir el betabloqueo.", "whisper": "Ante la crisis adrenérgica con cifras tensionales extremas, se administró <mark class=\"ok\">fentolamina</mark> intravenosa antes de introducir el <mark class=\"bad\">beta bloqueo</mark>.", "voxtral": "Ante la crisis adrenérgica con cifras tensionales extremas, se administró <mark class=\"ok\">fentolamina</mark> intravenosa antes de introducir el <mark class=\"bad\">beta bloqueo</mark>.", "cohere": "Ante la crisis adrenérgica con cifras tensionales extremas, se administró <mark class=\"ok\">fentolamina</mark> intravenosa antes de introducir el betabloqueo."}, "note": {"os2": ["writes the look-alike drug fenfluramina, on clean audio"], "soniox": [], "nova3": [], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "mint_012__snr20", "section": "noise", "type": "Writes a look-alike drug", "ref_html": "Se prescribe <b>prazosina</b> como alfabloqueante coadyuvante por mal control tensional refractario, avisando del riesgo de hipotensión de primera dosis.", "noise": "degraded", "degr": ["SNR 20 dB", "brown noise", "pitch -1.2 st"], "region": "peninsular", "voice": "synthetic voice · ElevenLabs", "mp3": "audio/mint_012__snr20.mp3", "hyp_html": {"os2": "Se prescribe <mark class=\"bad\">terazosina</mark> como <mark class=\"bad\">el fábricoqueante cuatrovante para el</mark> control tensional refractario, avisando del riesgo de hipotensión de primera dosis.", "soniox": "Se prescribe <mark class=\"ok\">prazosina</mark> como alfabloqueante coadyuvante por mal control tensional refractario; avisando del riesgo de hipotensión de primera dosis.", "nova3": "Se prescribe como alfabloqueante <mark class=\"bad\">o adyuvante</mark> por mal control tensional refractario. Avisando del riesgo de hipotensión de <mark class=\"bad\">1º</mark> dosis.", "flux": "Se prescribe <mark class=\"bad\">la cocina</mark>, como <mark class=\"bad\">el faloqueante cuadrioante</mark>, por mal control tensional refractario, avisando del riesgo de hipotensión de primera dosis.", "whisper": "Se prescribe <mark class=\"bad\">prafusina</mark> como alfabloqueante <mark class=\"bad\">o adyuvante</mark> por mal control tensional refractario, avisando del riesgo de hipotensión de primera dosis.", "voxtral": "Se prescribe <mark class=\"bad\">patrocina</mark> como alfabloqueante <mark class=\"bad\">o adyuvante</mark> por mal control tensional refractario. Avisando del riesgo de hipotensión de primera dosis.", "cohere": "Se prescribe <mark class=\"ok\">prazosina</mark> como alfabloqueante coadyuvante por mal control tensional refractario, avisando del riesgo de hipotensión de primera dosis."}, "note": {"os2": ["writes the look-alike drug terazosina"], "soniox": [], "nova3": ["drops “prazosina”"], "flux": [], "whisper": [], "voxtral": [], "cohere": []}}, {"id": "var_051__kokoro__snr10", "section": "noise", "type": "Stops early", "ref_html": "Mírale <b>la gaso</b> de ingreso, que tenía acidosis; en la gasometría arterial de control el pH ya se ha corregido.", "noise": "degraded", "degr": ["SNR 10 dB", "6-voice babble", "pitch -0.5 st"], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/var_051__kokoro__snr10.mp3", "hyp_html": {"os2": "Mírale <mark class=\"ok\">la gaso</mark> de ingreso.", "soniox": "Mírale <mark class=\"ok\">la gaso</mark> de ingreso, que tenía <mark class=\"bad\">hace 12</mark>. En la gasometría arterial de control, el pH ya se ha corregido.", "nova3": "<mark class=\"bad\">Mira el lagazo</mark> de ingreso. La gasometría arterial de control <mark class=\"bad\">de gas y gas</mark> se ha <mark class=\"bad\">corrido</mark>.", "flux": "Mírale <mark class=\"bad\">el agaso</mark> de ingreso. La <mark class=\"bad\">geometría</mark> arterial de control <mark class=\"bad\">en casi</mark> ya <mark class=\"bad\">sea continua</mark>.", "whisper": "Mírale <mark class=\"bad\">el agazo</mark> de ingreso que tenía <mark class=\"bad\">asidosis</mark>. En la gasometría arterial de control, el <mark class=\"bad\">gachi</mark> ya se ha <mark class=\"bad\">cogido</mark>.", "voxtral": "Mírale la <mark class=\"bad\">gasa</mark> de ingreso.", "cohere": "Mírale <mark class=\"ok\">la gaso</mark> de ingreso, que tenía acidosis. En la gasometría arterial de control, el pH ya se <mark class=\"bad\">acortiva</mark>."}, "note": {"os2": ["15 words missing (“que tenía acidosis en …”)"], "soniox": [], "nova3": ["drops “que tenía acidosis en”"], "flux": ["drops “que tenía acidosis en”", "drops “corregido”"], "whisper": [], "voxtral": ["15 words missing (“que tenía acidosis en …”)"], "cohere": ["drops “corregido”"]}}, {"id": "var_035__snr15", "section": "noise", "type": "Rewrites the sentence", "ref_html": "Le hicieron <b>una colono</b> el año pasado, le quitaron tres pólipos y quedó pendiente el resultado.", "noise": "degraded", "degr": ["SNR 15 dB", "6-voice babble", "Opus 16 kbps", "1.08× speed", "pitch -0.5 st"], "region": "peninsular", "voice": "synthetic voice · ElevenLabs", "mp3": "audio/var_035__snr15.mp3", "hyp_html": {"os2": "Le hicieron <mark class=\"ok\">una colono</mark> el año pasado. <mark class=\"bad\">Liberaron</mark> tres <mark class=\"bad\">bolígrafos</mark> y <mark class=\"bad\">quedo</mark> pendiente <mark class=\"bad\">los soldados</mark>.", "soniox": "Le hicieron <mark class=\"ok\">una colono</mark> el año pasado. Le quitaron 3 pólipos y quedó pendiente el resultado.", "nova3": "Le hicieron <mark class=\"ok\">una colono</mark> el año pasado. Le quitaron 3 pólipos y quedó pendiente el resultado.", "flux": "hicieron <mark class=\"ok\">una colono</mark> el año pasado. <mark class=\"bad\">Vidal</mark>, <mark class=\"bad\">después cosquilleo</mark> pendiente <mark class=\"bad\">de los soldados</mark>.", "whisper": "Le hicieron <mark class=\"ok\">una colono</mark> el año pasado. Le <mark class=\"bad\">invitaron</mark> tres <mark class=\"bad\">colipos</mark> y quedó pendiente el resultado.", "voxtral": "Le hicieron <mark class=\"ok\">una colono</mark> el año pasado.", "cohere": "Le hicieron <mark class=\"ok\">una colono</mark> el año pasado. Le quitaron tres <mark class=\"bad\">polivos</mark> y quedó pendiente <mark class=\"bad\">de los soldados</mark>."}, "note": {"os2": ["drops “quitaron”"], "soniox": [], "nova3": [], "flux": ["drops “Le”", "drops “pólipos y quedó”"], "whisper": [], "voxtral": ["9 words missing (“le quitaron tres pólipos …”)"], "cohere": []}}, {"id": "var_048__snr15", "section": "noise", "type": "Rewrites the sentence", "ref_html": "La <b>PCR</b> de ayer estaba en 180; hoy la proteína C reactiva ha bajado a 95, así que el antibiótico funciona.", "noise": "degraded", "degr": ["SNR 15 dB", "6-voice babble", "reverb", "AMR-NB phone 5.9 kbps", "0.92× speed", "pitch +0.5 st"], "region": "peninsular", "voice": "synthetic voice · ElevenLabs", "mp3": "audio/var_048__snr15.mp3", "hyp_html": {"os2": "<mark class=\"bad\">En</mark> la <mark class=\"ok\">PCR</mark> de ayer estaba en <mark class=\"bad\">100%</mark>. Hoy la proteína C reactiva ha bajado a 95. <mark class=\"bad\">Las fibras</mark> antibiótico <mark class=\"bad\">ocurren</mark>.", "soniox": "La <mark class=\"ok\">PCR</mark> de ayer estaba en 180, hoy la proteína C reactiva ha bajado a 95, así que el antibiótico funciona.", "nova3": "La <mark class=\"ok\">PCR</mark> de ayer estaba en <mark class=\"bad\">130</mark>. Hoy la proteína c reactiva ha bajado a 95. <mark class=\"bad\">Antibiotico</mark> funciona", "flux": "", "whisper": "La <mark class=\"ok\">PCR</mark> de <mark class=\"bad\">miel</mark> estaba en 180. Hoy la proteína C reactiva ha bajado a 95. Así que el antibiótico funciona.", "voxtral": "La <mark class=\"bad\">DTR</mark> de ayer estaba <mark class=\"bad\">enciendo central</mark>. Hoy la proteína C reactiva ha bajado a 95. <mark class=\"bad\">Las bacterias antibióticas funcionan</mark>.", "cohere": "La <mark class=\"ok\">PCR</mark> de ayer estaba en <mark class=\"bad\">160</mark>. Hoy la proteína C reactiva ha bajado a 95. Así que el antibiótico funciona."}, "note": {"os2": ["drops “el”"], "soniox": [], "nova3": ["drops “que el antibiótico”"], "flux": ["no output"], "whisper": [], "voxtral": ["drops “funciona”"], "cohere": []}}, {"id": "resu_020__kokoro__snr10", "section": "noise", "type": "Mishears terms", "ref_html": "En la biopsia prostática sale un <b>adenocarcinoma de próstata</b> Gleason 3+4, con dos cilindros de doce afectados.", "noise": "degraded", "degr": ["SNR 10 dB", "recorded noise", "pitch -1.2 st"], "region": "peninsular", "voice": "synthetic voice · Kokoro", "mp3": "audio/resu_020__kokoro__snr10.mp3", "hyp_html": {"os2": "En la biopsia prostática sale <mark class=\"bad\">una de lo carcinoma</mark> de próstata <mark class=\"bad\">que son</mark> tres más cuatro, con dos cilindros de doce afectados.", "soniox": "En la biopsia prostática sale <mark class=\"bad\">una</mark> <mark class=\"ok\">adenocarcinoma de próstata</mark> Gleason 3+4, con 2 cilindros de 12 afectados.", "nova3": "En la biopsia prostática, <mark class=\"bad\">salen la dedrocarcinoa</mark> de próstata 3 <mark class=\"bad\">más 4.2</mark> cilindros de 12 afectados.", "flux": "En la biopsia <mark class=\"bad\">bastante</mark>, sale <mark class=\"bad\">una deucacionada</mark> de próstata <mark class=\"bad\">ya son</mark> tres más cuatro, con dos cilindros de doce afectados.", "whisper": "En la biopsia prostática, sale <mark class=\"bad\">una</mark> <mark class=\"ok\">adenocarcinoma de próstata</mark> <mark class=\"bad\">que ya son</mark> 3 más 4, con dos cilindros de 12 afectados.", "voxtral": "En la biopsia prostática <mark class=\"bad\">salen</mark> <mark class=\"ok\">adenocarcinoma de próstata</mark> <mark class=\"bad\">que son</mark> 3 más 4, con dos cilindros de 12 afectados.", "cohere": "En la biopsia prostática sale <mark class=\"bad\">una delocarcinoma</mark> de próstata <mark class=\"bad\">gliason</mark> 3 más 4, con dos cilindros de doce afectados."}, "note": {"os2": [], "soniox": [], "nova3": ["drops “Gleason”", "drops “dos”"], "flux": [], "whisper": [], "voxtral": ["drops “un”"], "cohere": []}}, {"id": "var_022__snr5", "section": "inserted", "type": "Soniox invents a phrase", "ref_html": "Pásate por <b>la eco</b> a las diez, que la radióloga te lo hace entre paciente y paciente.", "noise": "degraded", "degr": ["SNR 5 dB", "recorded noise", "reverb", "pitch +1.2 st"], "region": "peninsular", "voice": "synthetic voice · ElevenLabs", "mp3": "audio/var_022__snr5.mp3", "hyp_html": {"os2": "<mark class=\"bad\">Pasa</mark> por <mark class=\"ok\">la eco</mark> <mark class=\"bad\">así</mark>, <mark class=\"bad\">el arranque</mark> lo <mark class=\"bad\">hago</mark> entre paciente y paciente.", "soniox": "<mark class=\"bad\">Antes de terminar</mark>, <mark class=\"bad\">buenos días</mark>. Que la radióloga te lo hace entre paciente y paciente.", "nova3": "<mark class=\"bad\">De una hitosis</mark>, que la <mark class=\"bad\">la víctima del</mark> paciente paciente.", "flux": "", "whisper": "<mark class=\"bad\">Gracias</mark> por la <mark class=\"bad\">hipótesis</mark>, que la <mark class=\"bad\">gran ayuda de la atención de pacientes</mark> y <mark class=\"bad\">pacientes</mark>.", "voxtral": "", "cohere": "<mark class=\"bad\">Pasa de tu neitopsis</mark>, que la <mark class=\"bad\">radioma</mark> te lo hace entre paciente y paciente."}, "note": {"os2": ["drops “que la radióloga te”"], "soniox": ["invented phrase in place of “Pásate por la eco a las diez”"], "nova3": ["drops “eco a las diez”", "drops “hace entre”", "drops “y”"], "flux": ["no output"], "whisper": ["drops “a las diez”"], "voxtral": ["no output"], "cohere": ["drops “a las diez”"]}}], "stats": {"med": {"clean": {"os2": {"term_recall": {"v": 0.927083, "d": null, "sig": null}, "bwer": {"v": 0.034913, "d": null, "sig": null}, "uwer": {"v": 0.036774, "d": null, "sig": null}, "wer": {"v": 0.036507, "d": null, "sig": null}, "ins_per_1k": {"v": 5.726557, "d": null, "sig": null}, "degenerate_rate": {"v": 0.0, "d": null, "sig": null}}, "soniox": {"term_recall": {"v": 0.765625, "d": 0.161458, "sig": true}, "bwer": {"v": 0.124688, "d": -0.089776, "sig": true}, "uwer": {"v": 0.03552, "d": 0.001254, "sig": false}, "wer": {"v": 0.048318, "d": -0.011811, "sig": true}, "ins_per_1k": {"v": 7.874016, "d": -2.147459, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "nova3": {"term_recall": {"v": 0.760417, "d": 0.166667, "sig": true}, "bwer": {"v": 0.129676, "d": -0.094763, "sig": true}, "uwer": {"v": 0.04346, "d": -0.006686, "sig": false}, "wer": {"v": 0.055834, "d": -0.019327, "sig": true}, "ins_per_1k": {"v": 9.663565, "d": -3.937008, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "flux": {"term_recall": {"v": 0.640625, "d": 0.286458, "sig": true}, "bwer": {"v": 0.204489, "d": -0.169576, "sig": true}, "uwer": {"v": 0.050982, "d": -0.014208, "sig": true}, "wer": {"v": 0.073014, "d": -0.036507, "sig": true}, "ins_per_1k": {"v": 11.453114, "d": -5.726557, "sig": true}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "whisper": {"term_recall": {"v": 0.776042, "d": 0.151042, "sig": true}, "bwer": {"v": 0.124688, "d": -0.089776, "sig": true}, "uwer": {"v": 0.03552, "d": 0.001254, "sig": false}, "wer": {"v": 0.048318, "d": -0.011811, "sig": true}, "ins_per_1k": {"v": 6.084467, "d": -0.35791, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "voxtral": {"term_recall": {"v": 0.723958, "d": 0.203125, "sig": true}, "bwer": {"v": 0.147132, "d": -0.112219, "sig": true}, "uwer": {"v": 0.042624, "d": -0.00585, "sig": false}, "wer": {"v": 0.057623, "d": -0.021117, "sig": true}, "ins_per_1k": {"v": 7.874016, "d": -2.147459, "sig": false}, "degenerate_rate": {"v": 0.006803, "d": -0.006803, "sig": false}}, "cohere": {"term_recall": {"v": 0.713542, "d": 0.213542, "sig": true}, "bwer": {"v": 0.147132, "d": -0.112219, "sig": true}, "uwer": {"v": 0.036356, "d": 0.000418, "sig": false}, "wer": {"v": 0.052255, "d": -0.015748, "sig": true}, "ins_per_1k": {"v": 7.874016, "d": -2.147459, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}}, "noisy": {"os2": {"term_recall": {"v": 0.786458, "d": null, "sig": null}, "bwer": {"v": 0.13089, "d": null, "sig": null}, "uwer": {"v": 0.133172, "d": null, "sig": null}, "wer": {"v": 0.132867, "d": null, "sig": null}, "ins_per_1k": {"v": 14.685315, "d": null, "sig": null}, "degenerate_rate": {"v": 0.0, "d": null, "sig": null}}, "soniox": {"term_recall": {"v": 0.651042, "d": 0.135417, "sig": true}, "bwer": {"v": 0.217277, "d": -0.086387, "sig": true}, "uwer": {"v": 0.075868, "d": 0.057304, "sig": true}, "wer": {"v": 0.094755, "d": 0.038112, "sig": true}, "ins_per_1k": {"v": 11.188811, "d": 3.496503, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "nova3": {"term_recall": {"v": 0.494792, "d": 0.291667, "sig": true}, "bwer": {"v": 0.329843, "d": -0.198953, "sig": true}, "uwer": {"v": 0.148103, "d": -0.014931, "sig": false}, "wer": {"v": 0.172378, "d": -0.03951, "sig": true}, "ins_per_1k": {"v": 18.881119, "d": -4.195804, "sig": false}, "degenerate_rate": {"v": 0.006536, "d": -0.006536, "sig": false}}, "flux": {"term_recall": {"v": 0.354167, "d": 0.432292, "sig": true}, "bwer": {"v": 0.455497, "d": -0.324607, "sig": true}, "uwer": {"v": 0.25222, "d": -0.119048, "sig": true}, "wer": {"v": 0.279371, "d": -0.146503, "sig": true}, "ins_per_1k": {"v": 25.874126, "d": -11.188811, "sig": true}, "degenerate_rate": {"v": 0.058824, "d": -0.058824, "sig": true}}, "whisper": {"term_recall": {"v": 0.5, "d": 0.286458, "sig": true}, "bwer": {"v": 0.308901, "d": -0.17801, "sig": true}, "uwer": {"v": 0.132365, "d": 0.000807, "sig": false}, "wer": {"v": 0.155944, "d": -0.023077, "sig": true}, "ins_per_1k": {"v": 24.475524, "d": -9.79021, "sig": true}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "voxtral": {"term_recall": {"v": 0.473958, "d": 0.3125, "sig": true}, "bwer": {"v": 0.371728, "d": -0.240838, "sig": true}, "uwer": {"v": 0.194512, "d": -0.06134, "sig": true}, "wer": {"v": 0.218182, "d": -0.085315, "sig": true}, "ins_per_1k": {"v": 19.58042, "d": -4.895105, "sig": false}, "degenerate_rate": {"v": 0.039216, "d": -0.039216, "sig": true}}, "cohere": {"term_recall": {"v": 0.494792, "d": 0.291667, "sig": true}, "bwer": {"v": 0.28534, "d": -0.15445, "sig": true}, "uwer": {"v": 0.110169, "d": 0.023002, "sig": true}, "wer": {"v": 0.133566, "d": -0.000699, "sig": false}, "ins_per_1k": {"v": 16.083916, "d": -1.398601, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}}, "all": {"os2": {"term_recall": {"v": 0.856771, "d": null, "sig": null}, "bwer": {"v": 0.081737, "d": null, "sig": null}, "uwer": {"v": 0.085814, "d": null, "sig": null}, "wer": {"v": 0.085249, "d": null, "sig": null}, "ins_per_1k": {"v": 10.258224, "d": null, "sig": null}, "degenerate_rate": {"v": 0.0, "d": null, "sig": null}}, "soniox": {"term_recall": {"v": 0.708333, "d": 0.148438, "sig": true}, "bwer": {"v": 0.16986, "d": -0.088123, "sig": true}, "uwer": {"v": 0.056046, "d": 0.029768, "sig": true}, "wer": {"v": 0.071808, "d": 0.013442, "sig": true}, "ins_per_1k": {"v": 9.550761, "d": 0.707464, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "nova3": {"term_recall": {"v": 0.627604, "d": 0.229167, "sig": true}, "bwer": {"v": 0.227331, "d": -0.145594, "sig": true}, "uwer": {"v": 0.096695, "d": -0.010881, "sig": true}, "wer": {"v": 0.114786, "d": -0.029537, "sig": true}, "ins_per_1k": {"v": 14.326141, "d": -4.067917, "sig": false}, "degenerate_rate": {"v": 0.003333, "d": -0.003333, "sig": false}}, "flux": {"term_recall": {"v": 0.497396, "d": 0.359375, "sig": true}, "bwer": {"v": 0.326948, "d": -0.245211, "sig": true}, "uwer": {"v": 0.153357, "d": -0.067543, "sig": true}, "wer": {"v": 0.177397, "d": -0.092147, "sig": true}, "ins_per_1k": {"v": 18.747789, "d": -8.489565, "sig": true}, "degenerate_rate": {"v": 0.03, "d": -0.03, "sig": true}}, "whisper": {"term_recall": {"v": 0.638021, "d": 0.21875, "sig": true}, "bwer": {"v": 0.214559, "d": -0.132822, "sig": true}, "uwer": {"v": 0.084788, "d": 0.001026, "sig": false}, "wer": {"v": 0.102759, "d": -0.01751, "sig": true}, "ins_per_1k": {"v": 15.387336, "d": -5.129112, "sig": true}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}, "voxtral": {"term_recall": {"v": 0.598958, "d": 0.257812, "sig": true}, "bwer": {"v": 0.256705, "d": -0.174968, "sig": true}, "uwer": {"v": 0.119893, "d": -0.034079, "sig": true}, "wer": {"v": 0.13884, "d": -0.05359, "sig": true}, "ins_per_1k": {"v": 13.795543, "d": -3.537319, "sig": false}, "degenerate_rate": {"v": 0.023333, "d": -0.023333, "sig": true}}, "cohere": {"term_recall": {"v": 0.604167, "d": 0.252604, "sig": true}, "bwer": {"v": 0.214559, "d": -0.132822, "sig": true}, "uwer": {"v": 0.073907, "d": 0.011907, "sig": true}, "wer": {"v": 0.093385, "d": -0.008136, "sig": false}, "ins_per_1k": {"v": 12.026884, "d": -1.768659, "sig": false}, "degenerate_rate": {"v": 0.0, "d": 0.0, "sig": false}}}}, "real": {"fleurs_es": {"os2": {"wer": {"v": 0.029, "d": null, "sig": null}, "ins_per_1k": {"v": 2.6, "d": null, "sig": null}}, "soniox": {"wer": {"v": 0.033, "d": -0.003, "sig": false}, "ins_per_1k": {"v": 4.3, "d": -1.8, "sig": true}}, "nova3": {"wer": {"v": 0.052, "d": -0.022, "sig": true}, "ins_per_1k": {"v": 9.6, "d": -7.0, "sig": true}}, "flux": {"wer": {"v": 0.045, "d": -0.015, "sig": true}, "ins_per_1k": {"v": 5.6, "d": -3.1, "sig": true}}, "whisper": {"wer": {"v": 0.031, "d": -0.001, "sig": false}, "ins_per_1k": {"v": 3.2, "d": -0.6, "sig": false}}, "voxtral": {"wer": {"v": 0.031, "d": -0.001, "sig": false}, "ins_per_1k": {"v": 3.8, "d": -1.3, "sig": false}}, "cohere": {"wer": {"v": 0.033, "d": -0.003, "sig": false}, "ins_per_1k": {"v": 4.6, "d": -2.0, "sig": true}}}, "voxpopuli_es": {"os2": {"wer": {"v": 0.083, "d": null, "sig": null}, "ins_per_1k": {"v": 23.7, "d": null, "sig": null}}, "soniox": {"wer": {"v": 0.091, "d": -0.008, "sig": true}, "ins_per_1k": {"v": 29.3, "d": -5.6, "sig": true}}, "nova3": {"wer": {"v": 0.1, "d": -0.016, "sig": true}, "ins_per_1k": {"v": 30.3, "d": -6.6, "sig": true}}, "flux": {"wer": {"v": 0.106, "d": -0.022, "sig": true}, "ins_per_1k": {"v": 30.0, "d": -6.3, "sig": true}}, "whisper": {"wer": {"v": 0.135, "d": -0.051, "sig": true}, "ins_per_1k": {"v": 21.7, "d": 2.0, "sig": false}}, "voxtral": {"wer": {"v": 0.107, "d": -0.023, "sig": true}, "ins_per_1k": {"v": 22.9, "d": 0.8, "sig": false}}, "cohere": {"wer": {"v": 0.066, "d": 0.017, "sig": true}, "ins_per_1k": {"v": 19.7, "d": 4.0, "sig": false}}}, "mediaspeech_health": {"os2": {"wer": {"v": 0.084, "d": null, "sig": null}, "ins_per_1k": {"v": 14.1, "d": null, "sig": null}}, "soniox": {"wer": {"v": 0.098, "d": -0.013, "sig": true}, "ins_per_1k": {"v": 26.0, "d": -11.9, "sig": true}}, "nova3": {"wer": {"v": 0.088, "d": -0.004, "sig": false}, "ins_per_1k": {"v": 17.2, "d": -3.1, "sig": false}}, "flux": {"wer": {"v": 0.089, "d": -0.005, "sig": false}, "ins_per_1k": {"v": 19.9, "d": -5.8, "sig": true}}, "whisper": {"wer": {"v": 0.116, "d": -0.032, "sig": true}, "ins_per_1k": {"v": 24.9, "d": -10.8, "sig": true}}, "voxtral": {"wer": {"v": 0.105, "d": -0.021, "sig": true}, "ins_per_1k": {"v": 15.0, "d": -0.9, "sig": false}}, "cohere": {"wer": {"v": 0.105, "d": -0.021, "sig": true}, "ins_per_1k": {"v": 28.5, "d": -14.4, "sig": true}}}}, "real_macro": {"os2": 6.6, "soniox": 7.4, "nova3": 8.0, "flux": 8.0, "whisper": 9.4, "voxtral": 8.1, "cohere": 6.8}, "empty": {"os2": 0, "soniox": 0, "nova3": 1, "flux": 9, "whisper": 0, "voxtral": 7, "cohere": 0}}};
+const SYS = {
+  os2:     {name:'OmniScribe 2', tag:'Omniloy, self-hosted, not publicly available', c:'--c-os2'},
+  soniox:  {name:'Soniox stt-rt-v5', tag:'API', c:'--c-soniox'},
+  nova3:   {name:'Deepgram Nova-3', tag:'API', c:'--c-nova'},
+  flux:    {name:'Deepgram Flux', tag:'API', c:'--c-flux'},
+  whisper: {name:'Whisper large-v3-turbo', tag:'open', c:'--c-whisper'},
+  voxtral: {name:'Voxtral Mini 4B Realtime', tag:'open', c:'--c-voxtral'},
+  cohere:  {name:'Cohere Transcribe', tag:'open', c:'--c-cohere'}
+};
+const ORDER = ['os2','soniox','nova3','flux','whisper','voxtral','cohere'];
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const S = DATA.stats, M = S.med;
+const pct = v => (v*100).toFixed(1)+'%';
+const vs = (e, higherBetter, words) => {
+  if (!e || e.d == null) return '';
+  if (!e.sig) return '<span class="vs tie">level</span>';
+  const ours = higherBetter ? e.d > 0 : e.d < 0;
+  return ours ? `<span class="vs win">${words?words[0]:'ours better'}</span>` : `<span class="vs lose">${words?words[1]:'theirs better'}</span>`;
+};
+const sysCell = k => k==='os2'
+  ? `<td><span class="sys"><i style="background:var(${SYS[k].c})"></i><span class="lbl">${SYS[k].name} <small>(${SYS[k].tag})</small></span></span></td>`
+  : `<td><span class="sys"><i style="background:var(${SYS[k].c})"></i>${SYS[k].name} <small>${SYS[k].tag}</small></span></td>`;
+const GROUPS = [['os2'], 'Commercial APIs, default configuration', ['soniox','nova3','flux'], 'Open-source models, default configuration', ['whisper','voxtral','cohere']];
+
+/* claims */
+document.getElementById('claims').innerHTML = [
+  ['85.7%', '', '<b>of medical terms right</b> across 300 clinical clips. The best of the other six, Soniox, gets 70.8%; the rest get 50–64%. Ahead on clean (92.7% vs ≤77.6%) and on degraded audio (78.6% vs ≤65.1%).'],
+  ['3.65%', '', '<b>WER on clean clinical audio</b>, the lowest of the seven (next: Soniox and Whisper-turbo, 4.83%). On real human speech: 6.6%, the lowest average of the seven, level with Cohere Transcribe (6.8%).'],
+  ['13.3%', 'caveat', '<b>WER on degraded audio</b>, against 9.5% for Soniox (Cohere 13.4%, level). That gives Soniox the lower overall WER (7.18% vs 8.52%).']
+].map(([n,cls,t])=>`<div class="claim"><div class="n ${cls}">${n}</div><p>${t}</p></div>`).join('');
+
+/* table helper */
+function groupedTable(id, head, rowFn){
+  let h = head + '<tbody>';
+  const ncol = (head.match(/<th/g)||[]).length;
+  GROUPS.forEach(g=>{
+    if (typeof g === 'string') { h += `<tr class="gap"><td colspan="12">${g}</td></tr>`; return; }
+    g.forEach(k=>{ h += `<tr class="${k==='os2'?'ours':''}">${sysCell(k)}${rowFn(k)}</tr>`; });
+  });
+  document.getElementById(id).innerHTML = h + '</tbody>';
+}
+const num = (v, lab) => `<td class="num" style="white-space:nowrap"><span class="mono">${v}</span> ${lab||''}</td>`;
+
+/* scoreboard */
+groupedTable('board',
+  `<thead><tr><th rowspan="2">System</th><th colspan="3" style="text-align:center;border-bottom:1px solid var(--rule-2)">Medical terms right</th><th colspan="3" style="text-align:center;border-bottom:1px solid var(--rule-2)">Word error rate</th></tr>
+   <tr><th>Clean</th><th>Degraded</th><th>All 300</th><th>Clean</th><th>Degraded</th><th>All 300</th></tr></thead>`,
+  k => ['clean','noisy','all'].map(l=>num(pct(M[l][k].term_recall.v), vs(M[l][k].term_recall,true))).join('') +
+       ['clean','noisy','all'].map(l=>num(pct(M[l][k].wer.v), vs(M[l][k].wer,false))).join(''));
+
+/* slope charts */
+function slope(id, metric, lo, hi, ticks){
+  const svg = document.getElementById(id);
+  const W = 470, H = 330, L = 118, R = 150, T = 24, B = 30;
+  const Y = v => T + (1 - (v - lo)/(hi - lo)) * (H - T - B);
+  const xa = L, xb = W - R;
+  const ink2 = css('--ink-2'), ink3 = css('--ink-3'), rule = css('--rule-2'), surf = css('--surface'), ink = css('--ink');
+  let s = '';
+  ticks.forEach(t=>{ s += `<line x1="${xa}" x2="${xb}" y1="${Y(t)}" y2="${Y(t)}" stroke="${rule}"/><text x="${xa-8}" y="${Y(t)+4}" text-anchor="end" font-size="11" fill="${ink3}">${t}%</text>`; });
+  s += `<text x="${xa}" y="${H-8}" text-anchor="middle" font-size="12" font-weight="600" fill="${ink2}">clean</text><text x="${xb}" y="${H-8}" text-anchor="middle" font-size="12" font-weight="600" fill="${ink2}">degraded</text>`;
+  const pts = ORDER.map(k=>({k, a:M.clean[k][metric].v*100, b:M.noisy[k][metric].v*100}));
+  const place = side => { const so = [...pts].sort((p,q)=>Y(p[side])-Y(q[side])); let last=-1e9; so.forEach(p=>{ let y=Y(p[side]); if (y-last<14) y=last+14; p['y'+side]=y; last=y; }); };
+  place('a'); place('b');
+  pts.forEach(p=>{
+    const col = css(SYS[p.k].c), ours = p.k==='os2';
+    s += `<line x1="${xa}" y1="${Y(p.a)}" x2="${xb}" y2="${Y(p.b)}" stroke="${col}" stroke-width="${ours?3:1.75}"/>`;
+    s += `<circle cx="${xa}" cy="${Y(p.a)}" r="4" fill="${col}" stroke="${surf}" stroke-width="2"/><circle cx="${xb}" cy="${Y(p.b)}" r="4" fill="${col}" stroke="${surf}" stroke-width="2"/>`;
+    if (ours) s += `<text x="${xa-36}" y="${Y(p.a)+4}" text-anchor="end" font-size="11.5" fill="${ink}" font-weight="700">${p.a.toFixed(1)}%</text>`;
+    const short = SYS[p.k].name.replace('Deepgram ','').replace(' stt-rt-v5','').replace(' large-v3-turbo','-turbo').replace(' Mini 4B Realtime',' RT').replace(' Transcribe','');
+    s += `<text x="${xb+9}" y="${p.yb+4}" font-size="11.5" fill="${ours?ink:ink2}" font-weight="${ours?700:500}">${p.b.toFixed(1)}% ${short}</text>`;
+  });
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = s;
+}
+function drawSlopes(){ slope('slopeR','term_recall', 30, 100, [40,60,80,100]); slope('slopeW','wer', 0, 30, [0,10,20,30]); }
+drawSlopes();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawSlopes);
+new MutationObserver(drawSlopes).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* inserted words */
+groupedTable('ins',
+  `<thead><tr><th rowspan="2">System</th><th colspan="4" style="text-align:center;border-bottom:1px solid var(--rule-2)">Inserted words per 1,000</th></tr><tr><th>Clinical · clean</th><th>Clinical · degraded</th><th>Clinical · all 300</th><th>FLEURS real speech</th></tr></thead>`,
+  k => ['clean','noisy','all'].map(l=>num(M[l][k].ins_per_1k.v.toFixed(1), vs(M[l][k].ins_per_1k,false,['ours fewer','theirs fewer']))).join('') +
+       num(S.real.fleurs_es[k].ins_per_1k.v.toFixed(1), vs(S.real.fleurs_es[k].ins_per_1k,false,['ours fewer','theirs fewer'])));
+
+/* open source models */
+(function(){
+  let h = `<thead><tr><th>System</th><th>Medical terms right</th><th>Clinical WER</th><th>FLEURS</th><th>VoxPopuli</th><th>MediaSpeech</th><th>Real-speech average</th></tr></thead><tbody>`;
+  const row = k => `<tr class="${k==='os2'?'ours':''}">${sysCell(k)}${num(pct(M.all[k].term_recall.v), vs(M.all[k].term_recall,true))}${num(pct(M.all[k].wer.v), vs(M.all[k].wer,false))}` +
+    ['fleurs_es','voxpopuli_es','mediaspeech_health'].map(s=>num(pct(S.real[s][k].wer.v), vs(S.real[s][k].wer,false))).join('') +
+    num(S.real_macro[k].toFixed(1)+'%') + '</tr>';
+  h += row('os2') + `<tr class="gap"><td colspan="7">Open-source models, default configuration</td></tr>` + ['whisper','voxtral','cohere'].map(row).join('');
+  document.getElementById('open').innerHTML = h + '</tbody>';
+})();
+
+/* cases */
+function card(c){
+  const degraded = c.noise !== 'clean';
+  const outs = ORDER.map(k=>{
+    const sy = SYS[k], notes = (c.note[k]||[]).filter(n=>n!=='no output');
+    const body = c.hyp_html[k] ? `<span class="txt">${c.hyp_html[k]}</span>` : `<span class="empty">(no output)</span>`;
+    const n = notes.map(x=>`<span class="note">${x}</span>`).join('');
+    return `<div class="out ${k==='os2'?'ours':''}"><div class="who"><i style="background:var(${sy.c})"></i>${sy.name}</div><div>${body}${n}</div></div>`;
+  }).join('');
+  const cond = 'others in default setup';
+  return `<article class="case">
+    <div class="side">
+      <audio controls preload="none" src="${c.mp3}" aria-label="Audio for ${c.id}"></audio>
+      <div class="chips">
+        ${c.type?`<span class="chip type">${c.type}</span>`:''}
+        ${degraded ? c.degr.map(d=>`<span class="chip noisy">${d}</span>`).join('') : '<span class="chip">clean</span>'}
+        <span class="chip">${c.voice}</span>
+        ${c.region==='latam' ? '<span class="chip">Latin-American voice</span>' : ''}
+        <span class="chip">${cond}</span>
+      </div>
+      <div class="id">${c.id}</div>
+    </div>
+    <div class="main">
+      <div class="said"><span class="lab">What was said</span>${c.ref_html}</div>
+      ${outs}
+    </div>
+  </article>`;
+}
+['wins','noise','inserted'].forEach(sec=>{
+  document.getElementById('c-'+sec).innerHTML = DATA.cases.filter(c=>c.section===sec).map(card).join('');
+});
+</script>
+
+</body>
+</html>
