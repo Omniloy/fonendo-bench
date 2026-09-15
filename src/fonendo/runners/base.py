@@ -148,7 +148,8 @@ def lazy(target: str, *, extra: str, **defaults: Any) -> Factory:
             module = importlib.import_module(module_name)
         except ImportError as exc:
             raise ImportError(
-                f"{target}: missing dependencies, run: pip install 'fonendo[{extra}] @ git+https://github.com/Omniloy/fonendo-bench' ({exc})"
+                f"{target}: missing dependencies, run: pip install "
+                f"'fonendo[{extra}] @ git+https://github.com/Omniloy/fonendo-bench' ({exc})"
             ) from exc
         return getattr(module, attr)(**{**defaults, **kwargs})
 
