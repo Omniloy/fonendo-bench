@@ -1,10 +1,11 @@
 """The ``fonendo`` command.
 
 fonendo fetch [SUBSET ...]                     build the public subsets under --data-dir
+fonendo models                                 list the registered models
 fonendo run --model M --subset S [--limit N]   transcribe -> results/raw/M/S.jsonl
 fonendo score --subset S --hyps F [--out J]    metrics with 95% CIs
 fonendo compare A B --subset S                 paired comparison of two hypotheses files
-fonendo report [--results-dir results]         leaderboard tables from scored results
+fonendo report [--results-dir results/raw]     summary.json + leaderboard.md from your runs
 """
 
 from __future__ import annotations
@@ -20,11 +21,6 @@ from fonendo.data import DEFAULT_DATA_DIR, SUBSETS, load_subset
 PUBLIC_SUBSETS = [n for n, s in SUBSETS.items() if s.kind == "public"]
 
 
-def _not_ready(what: str) -> int:
-    print(f"fonendo {what}: not implemented yet", file=sys.stderr)
-    return 2
-
-
 def _dump(obj: dict, out: str | None) -> None:
     text = json.dumps(obj, indent=2, ensure_ascii=False)
     if out:
@@ -38,13 +34,24 @@ def cmd_fetch(args: argparse.Namespace) -> int:
     if unknown:
         print(f"fonendo fetch: not a public subset: {', '.join(unknown)}", file=sys.stderr)
         return 2
-    try:
-        from fonendo.fetch import fetch  # type: ignore[import-not-found]
-    except ModuleNotFoundError as exc:
-        if exc.name != "fonendo.fetch":
-            raise
-        return _not_ready("fetch")
-    fetch(args.subsets or PUBLIC_SUBSETS, Path(args.data_dir))
+    from fonendo.fetch import fetch
+
+    fetch(
+        args.subsets or PUBLIC_SUBSETS,
+        Path(args.data_dir),
+        force=args.force,
+        keep_downloads=args.keep_downloads,
+    )
+    return 0
+
+
+def cmd_models(args: argparse.Namespace) -> int:
+    from fonendo.runners import LOCAL_REGISTRY, REGISTRY
+
+    for name, factory in REGISTRY.items():
+        kind = "local " if name in LOCAL_REGISTRY else "remote"
+        extra = getattr(factory, "extra", "?")
+        print(f"{name:32s} {kind}  pip install 'fonendo[{extra}]'")
     return 0
 
 
@@ -60,39 +67,50 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def cmd_score(args: argparse.Namespace) -> int:
-    from fonendo.scoring import load_hyps, score
+    from fonendo.report import score_cell
+    from fonendo.scoring import load_hyps
 
     rows = load_subset(args.subset, args.data_dir, hf_dir=args.hf_dir, with_audio=False)
-    try:
-        result = score(rows, load_hyps(args.hyps), block=args.block, n_boot=args.n_boot)
-    except NotImplementedError:
-        return _not_ready("score")
+    result = score_cell(
+        args.subset, rows, load_hyps(args.hyps), block=args.block, n_boot=args.n_boot
+    )
     _dump({"subset": args.subset, "hyps": str(args.hyps), **result}, args.out)
+    if not result["complete"]:
+        print(
+            f"fonendo score: incomplete ({result['n_missing']} missing, "
+            f"{result['n_errors']} error lines; scored as empty hypotheses)",
+            file=sys.stderr,
+        )
     return 0
 
 
 def cmd_compare(args: argparse.Namespace) -> int:
+    from fonendo.report import resolve_block
     from fonendo.scoring import compare, load_hyps
 
     rows = load_subset(args.subset, args.data_dir, hf_dir=args.hf_dir, with_audio=False)
-    try:
-        result = compare(
-            rows, load_hyps(args.a), load_hyps(args.b), block=args.block, n_boot=args.n_boot
-        )
-    except NotImplementedError:
-        return _not_ready("compare")
+    result = compare(
+        rows,
+        load_hyps(args.a),
+        load_hyps(args.b),
+        block=resolve_block(args.subset, args.block),
+        n_boot=args.n_boot,
+    )
     _dump({"subset": args.subset, "a": str(args.a), "b": str(args.b), **result}, args.out)
     return 0
 
 
 def cmd_report(args: argparse.Namespace) -> int:
-    try:
-        from fonendo.report import build_report  # type: ignore[import-not-found]
-    except ModuleNotFoundError as exc:
-        if exc.name != "fonendo.report":
-            raise
-        return _not_ready("report")
-    build_report(Path(args.results_dir), Path(args.out) if args.out else None)
+    from fonendo.report import build_report
+
+    build_report(
+        Path(args.results_dir),
+        Path(args.out) if args.out else None,
+        data_dir=args.data_dir,
+        hf_dir=args.hf_dir,
+        published=args.published,
+        n_boot=args.n_boot,
+    )
     return 0
 
 
@@ -118,9 +136,10 @@ def build_parser() -> argparse.ArgumentParser:
     def stat_args(sp: argparse.ArgumentParser) -> None:
         sp.add_argument(
             "--block",
-            choices=("clip", "text"),
-            default="clip",
-            help="bootstrap unit: clips, or sentences via meta.text_id",
+            choices=("auto", "clip", "text"),
+            default="auto",
+            help="bootstrap unit: clips, or sentences via meta.text_id "
+            "(default auto: sentences for clinical subsets, clips otherwise)",
         )
         sp.add_argument("--n-boot", type=int, default=2000)
         sp.add_argument("--out", default=None, help="also write the JSON result here")
@@ -133,7 +152,16 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"any of {', '.join(PUBLIC_SUBSETS)} (default: all)",
     )
     sp.add_argument("--data-dir", default=str(DEFAULT_DATA_DIR))
+    sp.add_argument("--force", action="store_true", help="rebuild subsets already built")
+    sp.add_argument(
+        "--keep-downloads",
+        action="store_true",
+        help="keep the downloaded source files in <data-dir>/.downloads",
+    )
     sp.set_defaults(func=cmd_fetch)
+
+    sp = sub.add_parser("models", help="list the registered models and their pip extras")
+    sp.set_defaults(func=cmd_models)
 
     sp = sub.add_parser("run", help="transcribe a subset with one model")
     sp.add_argument("--model", required=True)
@@ -159,9 +187,20 @@ def build_parser() -> argparse.ArgumentParser:
     stat_args(sp)
     sp.set_defaults(func=cmd_compare)
 
-    sp = sub.add_parser("report", help="build leaderboard tables from scored results")
-    sp.add_argument("--results-dir", default="results")
-    sp.add_argument("--out", default=None)
+    sp = sub.add_parser("report", help="summary.json + leaderboard.md from your runs")
+    sp.add_argument(
+        "--results-dir",
+        default="results/raw",
+        help="holds <model>/<subset>.jsonl (default: %(default)s)",
+    )
+    sp.add_argument("--out", default=None, help="output directory (default: --results-dir)")
+    sp.add_argument(
+        "--published",
+        default=None,
+        help="also list the systems of a published summary.json, e.g. results/summary.json",
+    )
+    sp.add_argument("--n-boot", type=int, default=2000)
+    data_args(sp)
     sp.set_defaults(func=cmd_report)
     return p
 

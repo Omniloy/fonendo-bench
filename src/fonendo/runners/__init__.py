@@ -4,21 +4,25 @@
 returning a :class:`~fonendo.runners.base.Runner`. Register runners with :func:`lazy` so that
 importing this package never imports a model's dependencies::
 
-    REGISTRY["whisper_large_v3"] = lazy(
-        "fonendo.runners.whisper:WhisperRunner", extra="whisper",
-        name="whisper_large_v3", model_id="openai/whisper-large-v3",
+    LOCAL_REGISTRY["whisper_large_v3"] = lazy(
+        "fonendo.runners.local.whisper:WhisperRunner", extra="whisper",
     )
 
-See CONTRACT.md, "Adding a runner".
+Local runners (open weights on your hardware) live in :mod:`fonendo.runners.local`, hosted APIs
+in :mod:`fonendo.runners.remote`; ``REGISTRY`` merges both. See CONTRACT.md, "Adding a runner".
 """
 
 from __future__ import annotations
 
 from fonendo.runners.base import Factory, Runner, lazy, run_subset
+from fonendo.runners.local import LOCAL_REGISTRY
+from fonendo.runners.remote import REMOTE_REGISTRY
 
-REGISTRY: dict[str, Factory] = {
-    # one entry per runnable model, alphabetical; added by the runner modules' authors
-}
+_overlap = set(LOCAL_REGISTRY) & set(REMOTE_REGISTRY)
+if _overlap:  # pragma: no cover - a packaging error
+    raise RuntimeError(f"model names registered twice: {sorted(_overlap)}")
+
+REGISTRY: dict[str, Factory] = dict(sorted({**LOCAL_REGISTRY, **REMOTE_REGISTRY}.items()))
 
 
 def get_runner(name: str, **kwargs) -> Runner:
@@ -31,4 +35,13 @@ def get_runner(name: str, **kwargs) -> Runner:
     return factory(**kwargs)
 
 
-__all__ = ["REGISTRY", "Factory", "Runner", "get_runner", "lazy", "run_subset"]
+__all__ = [
+    "LOCAL_REGISTRY",
+    "REGISTRY",
+    "REMOTE_REGISTRY",
+    "Factory",
+    "Runner",
+    "get_runner",
+    "lazy",
+    "run_subset",
+]

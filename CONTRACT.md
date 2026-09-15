@@ -17,7 +17,7 @@ information. The numbers therefore describe what a user gets out of the box.
 | Python | >= 3.10 |
 | license | Apache-2.0 for the code (`LICENSE`); each dataset keeps its own license |
 | entry point | `fonendo` -> `fonendo.cli:main` |
-| core dependencies | `numpy`, `soundfile`, `soxr`, `datasets`, `huggingface_hub` |
+| core dependencies | `numpy`, `soundfile`, `soxr`, `pyarrow`, `datasets`, `huggingface_hub` |
 | per-runner dependencies | one pip extra per runner family (section 4.3) |
 
 ```
@@ -25,13 +25,18 @@ src/fonendo/
   __init__.py        __version__, HF_DATASET = "omniloy/fonendo-bench", SAMPLE_RATE = 16000
   data.py            SUBSETS, load_subset(), load_audio_16k(), JSONL helpers
   fetch.py           builds the public subsets (`fonendo fetch`)
-  scoring.py         score(), compare(); text normalization and alignment live under fonendo/
-  report.py          leaderboard tables (`fonendo report`)
+  text/              Spanish normalizer (tokenize, NORMALIZER_VERSION)
+  scoring/           score(), compare(), score_macro(), compare_macro(); alignment, gold-term
+                     metrics, degenerate detection, bootstrap
+  report.py          score_cell(), summary.json and leaderboard.md (`fonendo report`)
   cli.py             the `fonendo` command
   runners/
-    __init__.py      REGISTRY, get_runner()
+    __init__.py      REGISTRY (= LOCAL_REGISTRY + REMOTE_REGISTRY), get_runner()
     base.py          Runner, lazy(), run_subset()
-    <family>.py      one module per runner family (whisper.py, nemo.py, soniox.py, ...)
+    local/           open-weights runners, one module per family (whisper.py, nemo.py, ...)
+    remote/          hosted-API runners, one module per provider (soniox.py, deepgram.py, ...)
+manifests/           clip selections of the public subsets (shipped in the wheel as
+                     fonendo/manifests)
 ```
 
 ## 2. Subsets
@@ -109,6 +114,14 @@ verify they scored the same audio). Output:
 "meta": {...}}` (`audio_path` relative to the subset directory). `data/` is git-ignored; the
 default location is `./data` or `FONENDO_DATA_DIR`.
 
+* `meta` carries `source`, `source_id` and `duration_s`, plus per subset: FLEURS
+  `sentence_id`, `gender`; VoxPopuli `speaker_id`, `gender`; MediaSpeech `health_keywords`.
+* `<data_dir>/<subset>/fetch_report.json` records how many clips are sample-identical to the
+  packaged sha256, any mismatch, and the library versions used.
+* Source files are downloaded to `<data_dir>/.downloads/` and deleted after use (`--keep-downloads`
+  keeps them). The FLEURS archive is streamed, never stored. A complete subset is skipped on
+  the next run (`--force` rebuilds it).
+
 ## 4. Runners (`fonendo.runners`)
 
 ### 4.1 `Runner`
@@ -143,11 +156,13 @@ factory returning a `Runner`. Register with `lazy()` so importing the registry n
 model's dependencies; a missing extra becomes `pip install 'fonendo[<extra>]'`:
 
 ```python
-REGISTRY["whisper_large_v3"] = lazy(
-    "fonendo.runners.whisper:WhisperRunner", extra="whisper",
-    name="whisper_large_v3", model_id="openai/whisper-large-v3",
+LOCAL_REGISTRY["whisper_large_v3"] = lazy(
+    "fonendo.runners.local.whisper:WhisperRunner", extra="whisper",
 )
 ```
+
+`LOCAL_REGISTRY` lives in `fonendo/runners/local/__init__.py`, `REMOTE_REGISTRY` in
+`fonendo/runners/remote/__init__.py`; `REGISTRY` merges both and refuses duplicate names.
 
 Factories accept keyword overrides; the CLI passes only `device` (`--device`).
 
@@ -156,14 +171,20 @@ Factories accept keyword overrides; the CLI passes only `device` (`--device`).
 | extra | family |
 |---|---|
 | `whisper` | Whisper checkpoints via `transformers` |
-| `nemo` | NVIDIA NeMo models (Parakeet, Canary) |
-| `voxtral` | Mistral Voxtral |
-| `cohere` | Cohere speech models |
+| `nemo` | NVIDIA NeMo models (Parakeet, Canary); own virtual environment |
+| `voxtral` | Mistral Voxtral Mini 3B and Mini 4B Realtime via `transformers` |
+| `voxtral-vllm` | Mistral Voxtral Small 24B via vLLM; own virtual environment |
+| `cohere` | Cohere Transcribe |
 | `granite` | IBM Granite Speech |
+| `mlx-whisper` | Whisper on Apple Silicon (MLX); macOS only |
 | `soniox` | Soniox API (remote) |
 | `deepgram` | Deepgram API (remote) |
 | `openai-compatible` | any OpenAI-compatible `/audio/transcriptions` endpoint (remote or self-hosted) |
 | `dev` | tests and lint |
+
+The published Parakeet and Canary hypotheses were produced with NeMo from GitHub at commit
+`ca3f93a5`; the `nemo` extra installs the PyPI 3.x release, which runs the same code but
+decodes a few clips differently (see `fonendo/runners/local/nemo.py`).
 
 Pin lower and upper bounds that were actually tested. When two families cannot share one
 environment (conflicting `transformers` or `torch` pins), say so in the runner's docstring and
@@ -211,15 +232,17 @@ in the README; use one virtual environment per extra.
 
 ### 4.6 Adding a runner
 
-1. Write `src/fonendo/runners/<family>.py` with a `Runner` subclass; its docstring lists the
-   model id + revision, tested versions, device, decoding flags and size on disk.
+1. Write `src/fonendo/runners/local/<family>.py` (or `remote/<provider>.py`) with a `Runner`
+   subclass; its docstring lists the model id + revision, tested versions, device, decoding
+   flags and size on disk.
 2. Add its dependencies to the family's extra in `pyproject.toml` (create the extra if new).
-3. Register it in `REGISTRY` with `lazy(...)`.
+3. Register it in `LOCAL_REGISTRY` (or `REMOTE_REGISTRY`) with `lazy(...)`.
 4. Smoke test: `fonendo run --model M --subset clinical_dev --limit 5` writes 5 lines; the same
    command again writes nothing; `fonendo score --subset clinical_dev --hyps ...` looks sane.
 5. Full run of every `test` subset; each file has exactly the subset's clip count and no
    `error` line.
-6. Copy the hypotheses and `.run.json` files to `results/<M>/`, score them, rebuild the report.
+6. `fonendo report --published results/summary.json` scores every file under `results/raw/`
+   and lists the new model next to the published ones.
 
 ## 5. Scoring (`fonendo.scoring`)
 
@@ -235,7 +258,8 @@ compare(subset_rows, hyps_a, hyps_b, *, block="clip", n_boot=2000, seed=0) -> di
 ### 5.1 Normalization and alignment
 
 Reference and hypothesis go through the same normalizer: lowercase, Unicode NFC, punctuation
-removed, accents kept, numbers and units rewritten in Spanish words, and runs of spelled-out
+removed, accents kept, number words rewritten as digits and units after a number abbreviated
+("quinientos miligramos" -> "500 mg"), and runs of spelled-out
 Spanish letter names collapsed to the initialism ("eme ge" -> "mg"). Word alignment is
 Levenshtein with substitutions (S), deletions (D) and insertions (I). The normalizer is
 versioned and its version is written into every score file.
@@ -259,12 +283,18 @@ Term metrics are `null` on subsets without gold terms.
 
 * 95% percentile bootstrap, 2,000 resamples, seed 0; the ratio of sums is recomputed on each
   resample.
-* `block="clip"` (default) resamples clips; `block="text"` resamples sentences through
-  `meta["text_id"]` (all renditions of a sentence move together; the conservative choice for the
-  clinical subsets).
+* `block="clip"` (default of the Python API) resamples clips; `block="text"` resamples
+  sentences through `meta["text_id"]` (all renditions of a sentence move together; the
+  conservative choice for the clinical subsets). The CLI and the leaderboard use
+  `--block auto`: sentences for clinical subsets, clips otherwise.
 * `compare` resamples A and B with the same blocks and reports, per metric, `a`, `b`,
-  `delta = a - b`, its `ci95` and `p_two_sided` (twice the smaller share of resamples on either
-  side of 0). A difference is called significant only when its CI excludes 0.
+  `delta = a - b`, its `ci95`, `p_two_sided` (twice the smaller share of resamples on either
+  side of 0), `significant` and `n_blocks`. A difference is called significant only when its
+  CI excludes 0 and there are at least 5 blocks.
+* `score_macro(parts, metric="wer")` averages a metric over several subsets (unweighted) with
+  a stratified bootstrap CI; `compare_macro` is its paired version. One generator draws the
+  subsets in the order given; the leaderboard uses fleurs_es, voxpopuli_es,
+  mediaspeech_health.
 
 ### 5.4 Score file
 
@@ -289,37 +319,46 @@ Term metrics are `null` on subsets without gold terms.
 }
 ```
 
-(Values are illustrative.) `rtf_median` is the median of `secs / audio duration` when the
-hypotheses carry `secs`; it depends on hardware and is informative only.
+(Values are illustrative.) The normalizer version is the constant `es1+lc1`. The file also
+carries `n_blocks`, a `counts` object `{S, D, I, N, gold_terms_not_in_ref}`, and, for clinical
+subsets, `by_condition: {clean: {n_clips, metrics}, degraded: {n_clips, metrics}}` (rows split
+by `meta["condition"]`, same block rule). Every metric also carries `n`, its denominator.
+`rtf_median` is the median of `secs / audio duration` when the hypotheses carry `secs`; it
+depends on hardware and is informative only.
 
 ## 6. Results and report
 
 ```
 results/
-  raw/                              local runs (git-ignored)
-  <model>/<subset>.jsonl            published hypotheses (section 4.4)
-  <model>/<subset>.run.json         run metadata
-  <model>/<subset>.score.json       score file (section 5.4)
-  <model>/system.json               only for results-only systems (below)
-  leaderboard.md, leaderboard.json  `fonendo report`
+  summary.json       published leaderboard data: per system and test subset, every metric
+                     with its 95% CI (no hypotheses, no per-clip data)
+  leaderboard.md     the same numbers as tables (rendered from summary.json)
+  raw/               your own runs, <model>/<subset>.jsonl + .run.json (git-ignored)
 ```
 
 * A published cell is complete: exactly the subset's clips, no `error` line.
-* **Results-only systems** (evaluated by their owner, no runner in `REGISTRY`) ship
-  hypotheses and score files like any other, plus `system.json`:
-  `{"label": str, "runnable": false, "note": str}`. The report shows the label and note
-  verbatim and marks the row as not reproducible with this package.
-* `fonendo report` reads every `results/<model>/*.score.json` for `test` subsets and writes
-  one table per subset (value and 95% CI per metric) plus an overall table.
+* `summary.json`: `{benchmark, fonendo_version, generated, configuration, normalizer,
+  bootstrap {ci, n_boot, seed, block per subset}, subsets, metrics (definitions), systems}`.
+  Each system: `{id, label, type, provider, model_id, license, runner, settings, note,
+  results: {<subset>: {n_clips, complete, block, wer, term_recall, bwer, uwer,
+  insertions_per_1k, degenerate_rate, by_condition?}}, real_speech_mean_wer}`; each metric is
+  `{value, ci95}` or null. `type` is `api`, `open`, `results-only` or `local-run`; `runner` is
+  the `--model` name that reproduces the row, or null.
+* **Results-only systems** (evaluated by their owner, no runner in `REGISTRY`) appear with
+  `type: "results-only"`, `runner: null` and a `note` that the leaderboard shows verbatim.
+* `fonendo report` scores every `<results-dir>/<model>/<subset>.jsonl` of a `test` subset
+  (default `results/raw`) and writes `summary.json` + `leaderboard.md` to `--out`;
+  `--published results/summary.json` adds the published systems to the tables.
 
 ## 7. CLI
 
 ```
-fonendo fetch [SUBSET ...] [--data-dir DIR]
+fonendo fetch [SUBSET ...] [--data-dir DIR] [--force] [--keep-downloads]
+fonendo models
 fonendo run --model M --subset S [--limit N] [--device D] [--out F] [--data-dir DIR] [--hf-dir DIR]
-fonendo score --subset S --hyps F [--block clip|text] [--n-boot N] [--out F]
-fonendo compare A.jsonl B.jsonl --subset S [--block clip|text] [--out F]
-fonendo report [--results-dir results] [--out DIR]
+fonendo score --subset S --hyps F [--block auto|clip|text] [--n-boot N] [--out F]
+fonendo compare A.jsonl B.jsonl --subset S [--block auto|clip|text] [--out F]
+fonendo report [--results-dir results/raw] [--out DIR] [--published results/summary.json]
 ```
 
 Environment: `HF_TOKEN` (gated dataset and weights), `FONENDO_DATA_DIR`, `FONENDO_HF_DIR`,
@@ -329,5 +368,9 @@ Environment: `HF_TOKEN` (gated dataset and weights), `FONENDO_DATA_DIR`, `FONEND
 
 * No secrets, local absolute paths, or machine names in code, docs, results or commit messages.
 * Audio never enters git (`*.wav`, `data/` are ignored); clinical audio is distributed only
-  through the gated dataset.
+  through the gated dataset. The one exception is the showcase: `docs/audio/` holds a few
+  short MP3 demo clips (clinical clips chosen by Omniloy for illustration, and FLEURS clips
+  under CC BY 4.0, credited on the page).
+* `results/` publishes aggregate numbers only (`summary.json`, `leaderboard.md`): no
+  hypotheses and no per-clip data.
 * Code comments and docs are in English; references and hypotheses stay as produced (Spanish).

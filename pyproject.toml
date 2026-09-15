@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "fonendo"
 version = "0.1.0.dev0"
 description = "fonendo-bench: a reproducible Spanish clinical speech-to-text benchmark"
-readme = "CONTRACT.md"
+readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [{ name = "Omniloy", email = "info@omniloy.com" }]
@@ -20,23 +20,47 @@ dependencies = [
     "numpy>=1.24",
     "soundfile>=0.12",
     "soxr>=0.3",
+    "pyarrow>=12",
     "datasets>=2.19",
     "huggingface_hub>=0.23",
 ]
 
 # One extra per runner family. `pip install "fonendo[<extra>]"` must be enough to run every
-# model registered under that extra (see CONTRACT.md, "Adding a runner").
-# Placeholders: each runner builder fills in exact, tested version bounds.
+# model registered under that extra (see CONTRACT.md, "Adding a runner"). Lower bounds are the
+# versions the published runs used. Families that pin different torch builds need separate
+# virtual environments: whisper + voxtral + cohere + granite share one; nemo and voxtral-vllm
+# each need their own.
 [project.optional-dependencies]
-whisper = []
-nemo = []
-voxtral = []
-cohere = []
-granite = []
-soniox = []
-deepgram = []
+whisper = ["torch>=2.4", "transformers>=5.17,<6", "accelerate>=1.0"]
+voxtral = [
+    "torch>=2.4",
+    "transformers>=5.17,<6",
+    "accelerate>=1.0",
+    "mistral-common[audio]>=1.9.1,<2",
+]
+cohere = [
+    "torch>=2.4",
+    "transformers>=5.17,<6",
+    "accelerate>=1.0",
+    "sentencepiece>=0.2",
+    "protobuf",
+]
+granite = [
+    "torch>=2.4",
+    "transformers>=5.17,<6",
+    "accelerate>=1.0",
+    "torchaudio>=2.4",
+    "peft>=0.13",
+]
+# The published Parakeet / Canary rows used NeMo from GitHub at commit ca3f93a5 (3.1.0.dev);
+# the PyPI 3.0 release runs the same code but decodes a few clips differently. See the README.
+nemo = ["nemo_toolkit[asr]>=3.0,<4"]
+voxtral-vllm = ["vllm==0.29.0", "mistral-common[audio]>=1.11.7,<2"]
+mlx-whisper = ["mlx-whisper>=0.4.3; sys_platform == 'darwin' and platform_machine == 'arm64'"]
+soniox = ["websockets>=13", "certifi"]
+deepgram = ["websockets>=13", "certifi"]
 openai-compatible = []
-dev = ["pytest>=8", "ruff>=0.5"]
+dev = ["pytest>=8", "ruff>=0.5", "websockets>=13"]
 
 [project.scripts]
 fonendo = "fonendo.cli:main"
@@ -48,6 +72,12 @@ Dataset = "https://huggingface.co/datasets/omniloy/fonendo-bench"
 [tool.hatch.build.targets.wheel]
 packages = ["src/fonendo"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"manifests" = "fonendo/manifests"
+
+[tool.hatch.build.targets.sdist]
+include = ["src/fonendo", "manifests", "tests", "README.md", "CONTRACT.md", "LICENSE"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py310"
@@ -58,3 +88,4 @@ select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
