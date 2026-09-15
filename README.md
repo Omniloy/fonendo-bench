@@ -196,7 +196,7 @@ from fonendo.scoring import load_hyps, score
 rows = load_subset("clinical_test", with_audio=False)  # clip_id, text, terms, meta
 result = score(rows, load_hyps("results/raw/my_model/clinical_test.jsonl"))
 print(result["metrics"]["wer"])  # {"value": ..., "ci95": [..., ...], "n": ...}
-print(result["block"])           # "text": sentences resampled, as on the leaderboard
+print(result["block"])  # "text": sentences resampled, as on the leaderboard
 ```
 
 `score()` and `compare()` use the same bootstrap rule as the CLI by default (`block="auto"`:
