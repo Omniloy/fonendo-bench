@@ -1,0 +1,19 @@
+"""fonendo-bench: a reproducible Spanish clinical speech-to-text benchmark.
+
+Modules (see CONTRACT.md for the full interface contract):
+
+* ``fonendo.data``     subset registry and ``load_subset(name, data_dir)``
+* ``fonendo.runners``  ``Runner`` base class, ``REGISTRY`` of model factories, the run loop
+* ``fonendo.scoring``  ``score(rows, hyps)`` and ``compare(...)`` with bootstrap CIs
+* ``fonendo.cli``      the ``fonendo`` command (fetch, run, score, compare, report)
+
+Every system is evaluated in its default configuration: plain transcription of the audio,
+Spanish forced where the system allows it, no per-clip context of any kind.
+"""
+
+__version__ = "0.1.0.dev0"
+
+HF_DATASET = "omniloy/fonendo-bench"
+SAMPLE_RATE = 16_000
+
+__all__ = ["HF_DATASET", "SAMPLE_RATE", "__version__"]

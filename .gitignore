@@ -1,0 +1,34 @@
+# Audio and fetched data (rebuilt with `fonendo fetch`; clinical audio lives in the gated HF dataset)
+data/
+*.wav
+
+# Local run outputs (curated hypotheses and scores are committed under results/<model>/)
+results/raw/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Model / dataset caches
+.cache/
+.hf_cache/
+hf_cache/
+*.incomplete
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

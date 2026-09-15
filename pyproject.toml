@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fonendo"
+version = "0.1.0.dev0"
+description = "fonendo-bench: a reproducible Spanish clinical speech-to-text benchmark"
+readme = "CONTRACT.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [{ name = "Omniloy", email = "info@omniloy.com" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Natural Language :: Spanish",
+]
+dependencies = [
+    "numpy>=1.24",
+    "soundfile>=0.12",
+    "soxr>=0.3",
+    "datasets>=2.19",
+    "huggingface_hub>=0.23",
+]
+
+# One extra per runner family. `pip install "fonendo[<extra>]"` must be enough to run every
+# model registered under that extra (see CONTRACT.md, "Adding a runner").
+# Placeholders: each runner builder fills in exact, tested version bounds.
+[project.optional-dependencies]
+whisper = []
+nemo = []
+voxtral = []
+cohere = []
+granite = []
+soniox = []
+deepgram = []
+openai-compatible = []
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+fonendo = "fonendo.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Omniloy/fonendo-bench"
+Dataset = "https://huggingface.co/datasets/omniloy/fonendo-bench"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fonendo"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
